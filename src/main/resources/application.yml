@@ -1,0 +1,106 @@
+server:
+  port: 1002
+
+spring:
+  application:
+    name: cn-process-service
+  jackson:
+    locale: zh_CN
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    deserialization:
+      fail-on-unknown-properties: false
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: ${spring.jackson.date-format}
+      time: HH:mm:ss
+  output:
+    ansi:
+      enabled: always
+  pid:
+    fail-on-write-error: true
+    file: ${user.home}/${spring.application.name}.pid
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    druid:
+      db-type: postgresql
+      filters: stat,wall,log4j2
+      initial-size: 10
+      min-idle: 1
+      max-active: 50
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 'ezalor'
+      test-while-idle: true
+      test-on-borrow: true
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: /druid/*,*.js,*.gif,*.jpg,*.png,*.css,*.ico
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        reset-enable: true
+
+logging:
+  file:
+    name: ${user.home}/logs/${spring.application.name}.log
+    path: ${user.home}/logs
+  level:
+    # 打印请求响应详细日志
+    org.springframework.web: ${LOGGING_LEVEL:INFO}
+    # 404 时打印详细日志
+    org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController: ${LOGGING_LEVEL:INFO}
+    org.cainiao: ${LOGGING_LEVEL:INFO}
+    org.apache.logging: off
+    io.swagger: off
+    # 测试用 trace
+    # org.springframework.security: trace
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+    groups:
+      enabled: true
+  customer:
+    theme: feeling-blue
+    title: 流程服务
+    url: https://gitee.com/MCaiNiaoM/cn-process-service
+    config-url: /v3/api-docs/swagger-config
+  server:
+    url: http://127.0.0.1:${server.port}
+    description: ${springdoc.customer.title}
+  info:
+    title: ${springdoc.customer.title}
+    description: ${springdoc.customer.title} API接口文档
+    version: 1.0.0
+    terms-of-service: https://gitee.com/MCaiNiaoM/cn-process-service
+    license:
+      name: Apache 2.0
+      url: http://www.apache.org/licenses/LICENSE-2.0
+    contact:
+      email: wdhlzd@163.com
+      name: ${springdoc.customer.title}
+      url: ${springdoc.customer.url}
+  group-configs:
+    - group: client
+      packages-to-scan:
+        - org.cainiao.scaffold.controller.client
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
