@@ -15,6 +15,10 @@
     <name>cn-process-service</name>
     <description>Process Service</description>
 
+    <properties>
+        <flowable.version>7.0.1</flowable.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,6 +40,18 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>${flowable.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter-actuator</artifactId>
+            <version>${flowable.version}</version>
         </dependency>
     </dependencies>
 
