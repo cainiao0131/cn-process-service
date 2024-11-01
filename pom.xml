@@ -53,6 +53,11 @@
             <artifactId>flowable-spring-boot-starter-actuator</artifactId>
             <version>${flowable.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.cainiao</groupId>
+            <artifactId>cn-common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
