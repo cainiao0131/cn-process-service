@@ -29,50 +29,50 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("t_flow_event_log")
-@Schema(name = "FlowEventLog", description = "流程事件日志汇总表")
-public class FlowEventLog extends IdBaseEntity {
+@TableName("t_process_event_log")
+@Schema(name = "ProcessEventLog", description = "流程事件日志汇总表")
+public class ProcessEventLog extends IdBaseEntity {
 
     @Serial
     private static final long serialVersionUID = -1643171496764425642L;
 
-    @TableField(value = "fel_process_definition_key", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pel_process_definition_key", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "流程定义 Key")
     private String processDefinitionKey;
 
-    @TableField(value = "fel_process_instance_id", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pel_process_instance_id", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "流程实例 ID")
     private String processInstanceId;
 
-    @TableField(value = "fel_element_type", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pel_element_type", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "元素类型")
     private ElementTypeEnum elementType;
 
-    @TableField(value = "fel_element_instance_id", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pel_element_instance_id", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "元素实例 ID，例如用户任务 ID")
     private String elementInstanceId;
 
-    @TableField(value = "fel_event_type")
+    @TableField(value = "pel_event_type")
     @Schema(description = "事件类型", requiredMode = RequiredMode.NOT_REQUIRED)
     private EventType eventType;
 
-    @TableField(value = "fel_trace_id")
+    @TableField(value = "pel_trace_id")
     @Schema(description = "追踪 ID，例如追踪一个请求的多次重试")
     private String traceId;
 
-    @TableField(value = "fel_request_body")
+    @TableField(value = "pel_request_body")
     @Schema(description = "请求体")
     private Map<String, Object> requestBody;
 
-    @TableField(value = "fel_http_status_code")
+    @TableField(value = "pel_http_status_code")
     @Schema(description = "HTTP 响应码")
     private Integer httpStatusCode;
 
-    @TableField(value = "fel_context")
+    @TableField(value = "pel_context")
     @Schema(description = "上下文")
     private Map<String, Object> context;
 
-    @TableField(value = "fel_exception_message")
+    @TableField(value = "pel_exception_message")
     @Schema(description = "异常消息")
     private String exceptionMessage;
 
