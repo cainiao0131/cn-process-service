@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,5 +33,14 @@ public class ProcessDefinitionMetadataController {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processDefinitionMetadataService.processDefinitions(0, current, size, key);
+    }
+
+    @GetMapping("process-definitions/{processDefinitionKey}")
+    @Operation(summary = "流程定义详情")
+    public ProcessDefinitionMetadata processDefinition(
+        @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey) {
+
+        // TODO 从 Header 中获取调用者的系统 ID
+        return processDefinitionMetadataService.processDefinition(0, processDefinitionKey);
     }
 }

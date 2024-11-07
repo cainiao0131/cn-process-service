@@ -43,4 +43,9 @@ public class ProcessDefinitionMetadataMapperService
             .eq(ProcessDefinitionMetadata::getSystemId, systemId)
             .orderByDesc(ProcessDefinitionMetadata::getUpdatedAt));
     }
+
+    public ProcessDefinitionMetadata processDefinition(long systemId, String processDefinitionKey) {
+        return lambdaQuery().eq(ProcessDefinitionMetadata::getSystemId, systemId)
+            .eq(ProcessDefinitionMetadata::getProcessDefinitionKey, processDefinitionKey).one();
+    }
 }

@@ -19,7 +19,13 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
     private final ProcessDefinitionMetadataMapperService processDefinitionMetadataMapperService;
 
     @Override
-    public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, long size, String key) {
-        return processDefinitionMetadataMapperService.searchPageBySystemId(systemId, current, size, key);
+    public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId,
+                                                               long current, long size, String searchKey) {
+        return processDefinitionMetadataMapperService.searchPageBySystemId(systemId, current, size, searchKey);
+    }
+
+    @Override
+    public ProcessDefinitionMetadata processDefinition(long systemId, String processDefinitionKey) {
+        return processDefinitionMetadataMapperService.processDefinition(systemId, processDefinitionKey);
     }
 }
