@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,5 +43,17 @@ public class ProcessDefinitionMetadataController {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processDefinitionMetadataService.processDefinition(0, processDefinitionKey);
+    }
+
+    @GetMapping("process-definitions/{processDefinitionKey}/instances")
+    @Operation(summary = "分页查询某流程定义下的流程实例")
+    public IPage<ProcessInstanceResponse> processInstances(
+        @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey,
+        @Parameter(description = "是否完成") @RequestParam(required = false) Boolean finished,
+        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size) {
+
+        // TODO 从 Header 中获取调用者的系统 ID
+        return processDefinitionMetadataService.processInstances(0, processDefinitionKey, finished, current, size);
     }
 }
