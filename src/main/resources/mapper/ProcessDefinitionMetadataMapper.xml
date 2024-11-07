@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cainiao.process.dao.mapper.ProcessDefinitionMetadataMapper">
+    <resultMap id="ProcessDefinitionMetadataResultMap" type="org.cainiao.process.entity.ProcessDefinitionMetadata">
+        <result column="pdm_system_id" property="systemId"/>
+        <result column="pdm_name" property="name"/>
+        <result column="pdm_process_definition_key" property="processDefinitionKey"/>
+        <result column="pdm_xml" property="xml"/>
+        <result column="pdm_version" property="version"/>
+        <result column="pdm_status" property="status"/>
+        <result column="pdm_description" property="description"/>
+    </resultMap>
+</mapper>

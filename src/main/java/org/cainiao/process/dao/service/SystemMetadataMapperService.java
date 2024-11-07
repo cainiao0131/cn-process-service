@@ -1,6 +1,5 @@
 package org.cainiao.process.dao.service;
 
-import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.cainiao.common.exception.BusinessException;
@@ -26,12 +25,12 @@ public class SystemMetadataMapperService extends ServiceImpl<SystemMetadataMappe
         LocalDateTime now = LocalDateTime.now();
         if (lambdaQuery().eq(SystemMetadata::getSystemId, systemId).exists()) {
             // 更新
-            LambdaUpdateChainWrapper<SystemMetadata> updateWrapper = lambdaUpdate();
-            updateWrapper.eq(SystemMetadata::getSystemId, systemId);
-            updateWrapper.set(SystemMetadata::getWebhook, systemMetadata.getWebhook());
-            updateWrapper.set(SystemMetadata::getUpdatedBy, userName);
-            updateWrapper.set(SystemMetadata::getUpdatedAt, now);
-            if (!update(updateWrapper)) {
+            if (!update(lambdaUpdate()
+                .eq(SystemMetadata::getSystemId, systemId)
+                .set(SystemMetadata::getWebhook, systemMetadata.getWebhook())
+                .set(SystemMetadata::getUpdatedBy, userName)
+                .set(SystemMetadata::getUpdatedAt, now))) {
+
                 throw new BusinessException("编辑系统元数据失败！");
             }
         } else {

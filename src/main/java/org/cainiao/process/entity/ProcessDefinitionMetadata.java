@@ -30,39 +30,39 @@ import java.util.Optional;
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("t_process_definition")
-@Schema(name = "ProcessDefinition", description = "流程定义")
-public class ProcessDefinition extends IdBaseEntity {
+@TableName("t_process_definition_metadata")
+@Schema(name = "ProcessDefinitionMetadata", description = "流程定义元数据")
+public class ProcessDefinitionMetadata extends IdBaseEntity {
 
     @Serial
     private static final long serialVersionUID = 573186224996665678L;
 
-    @TableField(value = "pd_system_id", insertStrategy = FieldStrategy.NOT_NULL)
+    @TableField(value = "pdm_system_id", insertStrategy = FieldStrategy.NOT_NULL)
     @Schema(description = "所属系统 ID")
     private Long systemId;
 
-    @TableField(value = "pd_name", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pdm_name", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "名称")
     private String name;
 
-    @TableField(value = "pd_process_definition_key", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pdm_process_definition_key", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "流程定义 Key，用于做业务")
     private String processDefinitionKey;
 
-    @TableField(value = "pd_xml")
+    @TableField(value = "pdm_xml")
     @Schema(description = "流程定义最新编辑中的 BPMN 规范的 XML，要么对应流程引擎最新版本，要么还没发布到流程引擎")
     private String xml;
 
-    @TableField(value = "pd_version", insertStrategy = FieldStrategy.NOT_NULL)
+    @TableField(value = "pdm_version", insertStrategy = FieldStrategy.NOT_NULL)
     @Schema(description = "流程定义在流程引擎中的最新版本")
     private Integer version;
 
-    @TableField(value = "pd_status", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "pdm_status", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "流程状态")
     @Builder.Default
     private StatusEnum status = StatusEnum.NEW;
 
-    @TableField(value = "pd_description")
+    @TableField(value = "pdm_description")
     @Schema(description = "流程描述")
     private String description;
 
