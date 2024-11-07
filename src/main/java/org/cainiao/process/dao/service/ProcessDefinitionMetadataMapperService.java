@@ -25,9 +25,18 @@ public class ProcessDefinitionMetadataMapperService
             return page(page, lambdaQuery()
                 .eq(ProcessDefinitionMetadata::getSystemId, systemId)
                 .and(lambdaQueryWrapper -> lambdaQueryWrapper
-                    .like(ProcessDefinitionMetadata::getName, key)
-                    .or().like(ProcessDefinitionMetadata::getProcessDefinitionKey, key)
+                    .like(ProcessDefinitionMetadata::getProcessDefinitionKey, key)
+                    .or().like(ProcessDefinitionMetadata::getName, key)
                     .or().like(ProcessDefinitionMetadata::getDescription, key))
+                .select(ProcessDefinitionMetadata::getProcessDefinitionKey,
+                    ProcessDefinitionMetadata::getName,
+                    ProcessDefinitionMetadata::getDescription,
+                    ProcessDefinitionMetadata::getVersion,
+                    ProcessDefinitionMetadata::getStatus,
+                    ProcessDefinitionMetadata::getCreatedAt,
+                    ProcessDefinitionMetadata::getCreatedBy,
+                    ProcessDefinitionMetadata::getUpdatedAt,
+                    ProcessDefinitionMetadata::getUpdatedBy)
                 .orderByDesc(ProcessDefinitionMetadata::getUpdatedAt));
         }
         return page(page, lambdaQuery()
