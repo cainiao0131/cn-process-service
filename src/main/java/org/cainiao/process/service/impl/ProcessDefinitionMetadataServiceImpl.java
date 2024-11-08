@@ -4,27 +4,34 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.cainiao.common.exception.BusinessException;
+import org.cainiao.process.dao.service.FormMapperService;
 import org.cainiao.process.dao.service.FormVersionMapperService;
 import org.cainiao.process.dao.service.ProcessDefinitionMetadataMapperService;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
-import org.cainiao.process.entity.Form;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
+import org.flowable.common.engine.impl.identity.Authentication;
+import org.flowable.engine.FormService;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.cainiao.process.util.ProcessUtil.validateForm;
 
 /**
  * <br />
@@ -37,10 +44,12 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
 
     private final ProcessDefinitionMetadataMapperService processDefinitionMetadataMapperService;
     private final FormVersionMapperService formVersionMapperService;
+    private final FormMapperService formMapperService;
 
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final RepositoryService repositoryService;
+    private final FormService formService;
 
     /**
      * @Override public FormVersion fetchByFlowFormKey(String flowFormKey) {
@@ -116,11 +125,10 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
 
         // 流程开始事件是否需要填写表单
         if (processDefinition.hasStartFormKey()) {
-            FormVersion formVersion = formVersionMapperService
-                .fetchByFlowFormKey(formService.getStartFormKey(processDefinitionId));
-            Form form = flowFormService.fetchFormByKey(formVersion.getFormKey());
+            String formKey = formService.getStartFormKey(processDefinitionId);
+            FormVersion formVersion = formVersionMapperService.fetchByFormKey(formKey);
             return ProcessStartEventResponse.builder()
-                .formName(form.getName())
+                .formName(formMapperService.fetchByKey(formKey).getName())
                 .processDefinitionId(processDefinitionId)
                 .needForm(true)
                 .formConfig(formVersion.getFormConfig())
@@ -131,5 +139,26 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
         return ProcessStartEventResponse.builder()
             .processInstanceId(startFlowByDefinitionId(userName, processDefinitionId, variables).getProcessInstanceId())
             .processDefinitionId(processDefinitionId).build();
+    }
+
+    public ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
+                                                          @Nullable Map<String, Object> variables) {
+        // 校验表单，即 formItems 中的必填项在 variables 中是否都有正确类型的值
+        validateForm(formVersionMapperService
+            .fetchByFormKey(formService.getStartFormKey(processDefinitionId)), variables);
+        return startFlowByDefinitionId(userName, processDefinitionId, variables);
+    }
+
+    public ProcessInstance startFlowByDefinitionId(String userName, String processDefinitionId,
+                                                   @Nullable Map<String, Object> variables) {
+        try {
+            // 设置发起流程的用户 ID
+            Authentication.setAuthenticatedUserId(userName);
+            // 开始流程
+            return runtimeService
+                .startProcessInstanceById(processDefinitionId, variables == null ? new HashMap<>() : variables);
+        } finally {
+            Authentication.setAuthenticatedUserId(null);
+        }
     }
 }

@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 public class FormVersionMapperService extends ServiceImpl<FormVersionMapper, FormVersion>
     implements IService<FormVersion> {
 
-    public FormVersion fetchByFlowFormKey(@NonNull String flowFormKey) {
-        String[] startFormInfo = flowFormKey.split(":");
+    public FormVersion fetchByFormKey(@NonNull String processFormKey) {
+        String[] startFormInfo = processFormKey.split(":");
         return lambdaQuery()
             .eq(FormVersion::getFormKey, startFormInfo[0])
             .eq(FormVersion::getVersion, Long.valueOf(startFormInfo[1]))
