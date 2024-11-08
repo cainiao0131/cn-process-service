@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.springframework.lang.Nullable;
 
 import java.util.Map;
 
@@ -18,4 +20,7 @@ public interface ProcessDefinitionMetadataService {
 
     ProcessStartEventResponse startProcess(long systemId, String userName,
                                            String processDefinitionKey, Map<String, Object> variables);
+
+    ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
+                                                   @Nullable Map<String, Object> variables);
 }

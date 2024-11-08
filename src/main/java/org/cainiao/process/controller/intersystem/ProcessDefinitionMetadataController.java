@@ -10,13 +10,7 @@ import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE;
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
@@ -61,13 +55,23 @@ public class ProcessDefinitionMetadataController {
         return processDefinitionMetadataService.processInstances(0, processDefinitionKey, finished, current, size);
     }
 
-    @PostMapping("start/flow")
+    @PostMapping("start/process")
     @Operation(summary = "发起流程")
-    public ProcessStartEventResponse startFlow(
-        @Parameter(description = "流程开始参数") @RequestBody StartFlowRequest startFlowRequest) {
+    public ProcessStartEventResponse startProcess(
+        @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
 
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
         return processDefinitionMetadataService.startProcess(0, null,
             startFlowRequest.getProcessDefinitionKey(), startFlowRequest.getVariables());
+    }
+
+    @PostMapping("start/form-process")
+    @Operation(summary = "通过表单变量和流程定义ID发起流程")
+    public String startProcessByForm(
+        @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
+
+        // TODO 从 Header 中获取调用者的用户名
+        return processDefinitionMetadataService.startFlowByFormAndDefinitionId(null,
+            startFlowRequest.getProcessDefinitionId(), startFlowRequest.getVariables()).getProcessInstanceId();
     }
 }

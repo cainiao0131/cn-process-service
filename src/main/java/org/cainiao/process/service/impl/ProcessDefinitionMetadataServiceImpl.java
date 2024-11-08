@@ -116,6 +116,10 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
     @Override
     public ProcessStartEventResponse startProcess(long systemId, String userName,
                                                   String processDefinitionKey, Map<String, Object> variables) {
+        if (!processDefinitionMetadataMapperService.exists(systemId, processDefinitionKey)) {
+            throw new BusinessException("未找到流程定义");
+        }
+
         ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
             .processDefinitionTenantId(String.valueOf(systemId))
             .processDefinitionKey(processDefinitionKey)
@@ -141,6 +145,7 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
             .processDefinitionId(processDefinitionId).build();
     }
 
+    @Override
     public ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
                                                           @Nullable Map<String, Object> variables) {
         // 校验表单，即 formItems 中的必填项在 variables 中是否都有正确类型的值
