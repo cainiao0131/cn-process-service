@@ -24,10 +24,14 @@ public class Form extends IdBaseEntity {
 
     @Serial
     private static final long serialVersionUID = -5576186859284046249L;
-    
+
     @TableField(value = "f_system_id", insertStrategy = FieldStrategy.NOT_NULL)
     @Schema(description = "所属系统 ID")
     private Long systemId;
+
+    @TableField(value = "f_form_id", insertStrategy = FieldStrategy.NOT_NULL)
+    @Schema(description = "流程表单 Key，用于做业务的主键")
+    private String key;
 
     @TableField(value = "f_name", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "表单名称")

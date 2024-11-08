@@ -5,11 +5,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.cainiao.process.dto.request.StartFlowRequest;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
+import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,5 +59,15 @@ public class ProcessDefinitionMetadataController {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processDefinitionMetadataService.processInstances(0, processDefinitionKey, finished, current, size);
+    }
+
+    @PostMapping("start/flow")
+    @Operation(summary = "发起流程")
+    public ProcessStartEventResponse startFlow(
+        @Parameter(description = "流程开始参数") @RequestBody StartFlowRequest startFlowRequest) {
+
+        // TODO 从 Header 中获取调用者的系统 ID 和用户名
+        return processDefinitionMetadataService.startProcess(0, null,
+            startFlowRequest.getProcessDefinitionKey(), startFlowRequest.getVariables());
     }
 }

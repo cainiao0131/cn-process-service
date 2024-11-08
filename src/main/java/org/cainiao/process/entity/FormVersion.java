@@ -31,9 +31,9 @@ public class FormVersion extends IdBaseEntity {
     private static final long serialVersionUID = -5563961137771745802L;
 
     @TableField(value = "fv_form_id", insertStrategy = FieldStrategy.NOT_NULL)
-    @Schema(description = "流程表单 ID")
-    private Long formId;
-    
+    @Schema(description = "流程表单 Key，用于做业务的主键")
+    private String formKey;
+
     @TableField(value = "fv_version", insertStrategy = FieldStrategy.NOT_NULL)
     @Schema(description = "表单版本号")
     private Long version;

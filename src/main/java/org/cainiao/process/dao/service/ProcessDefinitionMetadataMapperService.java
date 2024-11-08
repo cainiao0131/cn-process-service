@@ -48,4 +48,9 @@ public class ProcessDefinitionMetadataMapperService
         return lambdaQuery().eq(ProcessDefinitionMetadata::getSystemId, systemId)
             .eq(ProcessDefinitionMetadata::getProcessDefinitionKey, processDefinitionKey).one();
     }
+
+    public boolean exists(long systemId, String processDefinitionKey) {
+        return lambdaQuery().eq(ProcessDefinitionMetadata::getSystemId, systemId)
+            .eq(ProcessDefinitionMetadata::getProcessDefinitionKey, processDefinitionKey).exists();
+    }
 }
