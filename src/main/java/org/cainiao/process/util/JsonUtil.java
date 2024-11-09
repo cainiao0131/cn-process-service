@@ -3,6 +3,7 @@ package org.cainiao.process.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
+import org.cainiao.common.exception.BusinessException;
 
 import java.util.List;
 
@@ -22,7 +23,12 @@ public class JsonUtil {
         return objectMapper;
     }
 
-    public static <T> List<T> jsonToList(String json, Class<T> clazz) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+    public static <T> List<T> jsonToList(String json, Class<T> clazz) {
+        try {
+            return OBJECT_MAPPER
+                .readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (JsonProcessingException e) {
+            throw new BusinessException("解析 JSON 失败", e);
+        }
     }
 }

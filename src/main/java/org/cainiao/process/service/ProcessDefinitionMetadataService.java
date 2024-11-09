@@ -1,6 +1,7 @@
 package org.cainiao.process.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.cainiao.process.dto.response.ProcessActivity;
 import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
@@ -26,4 +27,6 @@ public interface ProcessDefinitionMetadataService {
                                                    @Nullable Map<String, Object> variables);
 
     ProcessInstanceDetail processInstance(String processInstanceId);
+
+    IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, long size);
 }

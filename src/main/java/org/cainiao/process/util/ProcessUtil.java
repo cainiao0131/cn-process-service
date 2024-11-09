@@ -1,6 +1,5 @@
 package org.cainiao.process.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.experimental.UtilityClass;
 import org.cainiao.common.exception.BusinessException;
 import org.cainiao.process.dto.form.FormItem;
@@ -23,12 +22,7 @@ public class ProcessUtil {
         if (formVersion == null) {
             return;
         }
-        List<FormItem> formItems;
-        try {
-            formItems = JsonUtil.jsonToList(formVersion.getFormItems(), FormItem.class);
-        } catch (JsonProcessingException e) {
-            throw new BusinessException("JSON 转换错误", e);
-        }
+        List<FormItem> formItems = JsonUtil.jsonToList(formVersion.getFormItems(), FormItem.class);
         for (FormItem formItem : formItems) {
             String fieldName = formItem.getConfig().getName();
             validateField(fieldName, variables.get(fieldName), formItem.getRules());
