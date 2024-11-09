@@ -7,8 +7,11 @@ import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 
+import java.io.IOException;
 import java.util.Map;
 
 public interface ProcessDefinitionMetadataService {
@@ -29,4 +32,6 @@ public interface ProcessDefinitionMetadataService {
     ProcessInstanceDetail processInstance(String processInstanceId);
 
     IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, long size);
+
+    ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException;
 }

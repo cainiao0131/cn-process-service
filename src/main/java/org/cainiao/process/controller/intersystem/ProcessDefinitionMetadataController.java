@@ -12,7 +12,11 @@ import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE;
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
@@ -93,5 +97,14 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
         return processDefinitionMetadataService.processInstanceActivities(processInstanceId, current, size);
+    }
+
+    @GetMapping("process-instance/{processInstanceId}/diagram")
+    @Operation(summary = "流程图")
+    public ResponseEntity<Resource> processDiagram(
+        @Parameter(description = "流程实例 ID", required = true)
+        @PathVariable String processInstanceId) throws IOException {
+
+        return processDefinitionMetadataService.processDiagram(processInstanceId);
     }
 }

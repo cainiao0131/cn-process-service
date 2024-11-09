@@ -14,14 +14,12 @@ import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.StartEvent;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.FormService;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
+import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -30,12 +28,21 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.flowable.image.ProcessDiagramGenerator;
 import org.flowable.variable.api.history.HistoricVariableInstance;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -57,6 +64,7 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
     private final FormVersionMapperService formVersionMapperService;
     private final FormMapperService formMapperService;
 
+    private final ProcessEngine processEngine;
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final RepositoryService repositoryService;
@@ -355,5 +363,31 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
                 .build());
         });
         return taskVariables;
+    }
+
+    @Override
+    public ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException {
+        ProcessInstance processInstance = runtimeService
+            .createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        List<String> activityIds = new ArrayList<>();
+        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).list();
+        if (executions != null && !executions.isEmpty()) {
+            activityIds.addAll(executions.stream().map(Execution::getActivityId).filter(Objects::nonNull).toList());
+        }
+
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
+        ProcessEngineConfiguration processEngineConfiguration = processEngine.getProcessEngineConfiguration();
+        ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+        try (InputStream inputStream = diagramGenerator
+            .generateDiagram(bpmnModel, "png", activityIds, new ArrayList<>(),
+                processEngineConfiguration.getActivityFontName(), processEngineConfiguration.getLabelFontName(),
+                processEngineConfiguration.getAnnotationFontName(),
+                processEngineConfiguration.getClassLoader(), 2.0, true)) {
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+        }
     }
 }
