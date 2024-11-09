@@ -14,7 +14,7 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 import java.util.Map;
 
-public interface ProcessDefinitionMetadataService {
+public interface ProcessService {
 
     IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, long size, String key);
 

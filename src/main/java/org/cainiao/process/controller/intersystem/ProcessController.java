@@ -11,7 +11,7 @@ import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
-import org.cainiao.process.service.ProcessDefinitionMetadataService;
+import org.cainiao.process.service.ProcessService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +23,11 @@ import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
 
 @RestController
 @RequestMapping("inter-system")
-@Tag(name = "ProcessDefinitionMetadata", description = "管理流程定义元数据")
+@Tag(name = "ProcessController", description = "流程管理")
 @RequiredArgsConstructor
-public class ProcessDefinitionMetadataController {
+public class ProcessController {
 
-    private final ProcessDefinitionMetadataService processDefinitionMetadataService;
+    private final ProcessService processService;
 
     @GetMapping("process-definitions")
     @Operation(summary = "分页模糊搜索系统下的流程定义列表")
@@ -37,7 +37,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "搜索关键词") @RequestParam(required = false) String key) {
 
         // TODO 从 Header 中获取调用者的系统 ID
-        return processDefinitionMetadataService.processDefinitions(0, current, size, key);
+        return processService.processDefinitions(0, current, size, key);
     }
 
     @GetMapping("process-definition/{processDefinitionKey}")
@@ -46,7 +46,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey) {
 
         // TODO 从 Header 中获取调用者的系统 ID
-        return processDefinitionMetadataService.processDefinition(0, processDefinitionKey);
+        return processService.processDefinition(0, processDefinitionKey);
     }
 
     @GetMapping("process-definition/{processDefinitionKey}/instances")
@@ -58,7 +58,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size) {
 
         // TODO 从 Header 中获取调用者的系统 ID
-        return processDefinitionMetadataService.processInstances(0, processDefinitionKey, finished, current, size);
+        return processService.processInstances(0, processDefinitionKey, finished, current, size);
     }
 
     @PostMapping("process-instance")
@@ -67,7 +67,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
 
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
-        return processDefinitionMetadataService.startProcess(0, null,
+        return processService.startProcess(0, null,
             startFlowRequest.getProcessDefinitionKey(), startFlowRequest.getVariables());
     }
 
@@ -77,7 +77,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
 
         // TODO 从 Header 中获取调用者的用户名
-        return processDefinitionMetadataService.startFlowByFormAndDefinitionId(null,
+        return processService.startFlowByFormAndDefinitionId(null,
             startFlowRequest.getProcessDefinitionId(), startFlowRequest.getVariables()).getProcessInstanceId();
     }
 
@@ -86,7 +86,7 @@ public class ProcessDefinitionMetadataController {
     public ProcessInstanceDetail processInstance(
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
-        return processDefinitionMetadataService.processInstance(processInstanceId);
+        return processService.processInstance(processInstanceId);
     }
 
     @GetMapping("process-instance/{processInstanceId}/activities")
@@ -96,7 +96,7 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size,
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
-        return processDefinitionMetadataService.processInstanceActivities(processInstanceId, current, size);
+        return processService.processInstanceActivities(processInstanceId, current, size);
     }
 
     @GetMapping("process-instance/{processInstanceId}/diagram")
@@ -105,6 +105,6 @@ public class ProcessDefinitionMetadataController {
         @Parameter(description = "流程实例 ID", required = true)
         @PathVariable String processInstanceId) throws IOException {
 
-        return processDefinitionMetadataService.processDiagram(processInstanceId);
+        return processService.processDiagram(processInstanceId);
     }
 }

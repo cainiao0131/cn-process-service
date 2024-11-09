@@ -12,7 +12,7 @@ import org.cainiao.process.dto.form.FormItemConfig;
 import org.cainiao.process.dto.response.*;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
-import org.cainiao.process.service.ProcessDefinitionMetadataService;
+import org.cainiao.process.service.ProcessService;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
@@ -58,7 +58,7 @@ import static org.cainiao.process.util.ProcessUtil.validateForm;
  */
 @Service
 @RequiredArgsConstructor
-public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMetadataService {
+public class ProcessServiceImpl implements ProcessService {
 
     private final ProcessDefinitionMetadataMapperService processDefinitionMetadataMapperService;
     private final FormVersionMapperService formVersionMapperService;
