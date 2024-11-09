@@ -21,4 +21,12 @@ public class SystemMetadataServiceImpl implements SystemMetadataService {
     public void setSystemMetadata(long systemId, String userName, SystemMetadata systemMetadata) {
         systemMetadataMapperService.saveOrUpdateBySystemId(systemId, userName, systemMetadata);
     }
+
+    @Override
+    public SystemMetadata getSystemMetadata(Long systemId) {
+        if (systemId == null) {
+            return null;
+        }
+        return systemMetadataMapperService.getOne(systemId);
+    }
 }

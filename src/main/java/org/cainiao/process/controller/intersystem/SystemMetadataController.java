@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.cainiao.process.entity.SystemMetadata;
 import org.cainiao.process.service.SystemMetadataService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("inter-system")
@@ -24,5 +21,13 @@ public class SystemMetadataController {
     public void setSystemMetadata(@Parameter(description = "系统元数据") @RequestBody SystemMetadata systemMetadata) {
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
         systemMetadataService.setSystemMetadata(0, null, systemMetadata);
+    }
+
+    @GetMapping("system-metadata/{systemId}")
+    @Operation(summary = "获取系统的流程相关元数据")
+    public SystemMetadata getSystemMetadata(
+        @Parameter(description = "系统 ID", required = true) @PathVariable Long systemId) {
+
+        return systemMetadataService.getSystemMetadata(systemId);
     }
 }

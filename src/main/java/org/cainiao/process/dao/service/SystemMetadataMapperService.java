@@ -46,4 +46,8 @@ public class SystemMetadataMapperService extends ServiceImpl<SystemMetadataMappe
             }
         }
     }
+
+    public SystemMetadata getOne(long systemId) {
+        return lambdaQuery().eq(SystemMetadata::getSystemId, systemId).one();
+    }
 }
