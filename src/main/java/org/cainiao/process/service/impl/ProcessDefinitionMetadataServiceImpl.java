@@ -7,11 +7,13 @@ import org.cainiao.common.exception.BusinessException;
 import org.cainiao.process.dao.service.FormMapperService;
 import org.cainiao.process.dao.service.FormVersionMapperService;
 import org.cainiao.process.dao.service.ProcessDefinitionMetadataMapperService;
+import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessDefinitionMetadataService;
+import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.FormService;
 import org.flowable.engine.HistoryService;
@@ -25,11 +27,9 @@ import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.cainiao.process.util.ProcessUtil.validateForm;
 
@@ -154,8 +154,8 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
         return startFlowByDefinitionId(userName, processDefinitionId, variables);
     }
 
-    public ProcessInstance startFlowByDefinitionId(String userName, String processDefinitionId,
-                                                   @Nullable Map<String, Object> variables) {
+    private ProcessInstance startFlowByDefinitionId(String userName, String processDefinitionId,
+                                                    @Nullable Map<String, Object> variables) {
         try {
             // 设置发起流程的用户 ID
             Authentication.setAuthenticatedUserId(userName);
@@ -165,5 +165,48 @@ public class ProcessDefinitionMetadataServiceImpl implements ProcessDefinitionMe
         } finally {
             Authentication.setAuthenticatedUserId(null);
         }
+    }
+
+    @Override
+    public ProcessInstanceDetail processInstance(String processInstanceId) {
+        ProcessInstance processInstance = runtimeService
+            .createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        // 正在执行的节点 ID
+        Set<String> activeActivityIds = getActiveActivityIds(processInstanceId);
+        /*
+         * 一个活动，可能被重复执行过多次，这会导致一个节点查出多个 HistoricActivityInstance 记录
+         * 这里是绘图用的，需要去重，取最新的那个的状态，并且要排除那些正在执行的节点
+         */
+        Set<String> finishedActivityIds = new HashSet<>();
+        historyService.createHistoricActivityInstanceQuery()
+            .processInstanceId(processInstanceId).finished().orderByHistoricActivityInstanceEndTime().desc().list()
+            .forEach(historicActivityInstance -> {
+                String activityId = historicActivityInstance.getActivityId();
+                if (!activeActivityIds.contains(activityId)) {
+                    finishedActivityIds.add(activityId);
+                }
+            });
+        return ProcessInstanceDetail.builder()
+            .processInstanceId(processInstanceId)
+            .xml(new String(new BpmnXMLConverter().convertToXML(repositoryService
+                .getBpmnModel(processInstance.getProcessDefinitionId())), StandardCharsets.UTF_8))
+            .finishedActivityIds(new ArrayList<>(finishedActivityIds))
+            .activeActivityIds(new ArrayList<>(activeActivityIds))
+            .build();
+    }
+
+    /**
+     * 获取流程实例中正在执行的节点 ID
+     *
+     * @param processInstanceId 流程实例 ID
+     * @return 流程实例中正在执行的节点 ID 列表
+     */
+    private Set<String> getActiveActivityIds(String processInstanceId) {
+        Set<String> activityIds = new HashSet<>();
+        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).list();
+        if (executions != null && !executions.isEmpty()) {
+            activityIds.addAll(executions.stream().map(Execution::getActivityId).filter(Objects::nonNull).toList());
+        }
+        return activityIds;
     }
 }

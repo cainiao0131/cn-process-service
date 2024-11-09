@@ -1,6 +1,7 @@
 package org.cainiao.process.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
@@ -23,4 +24,6 @@ public interface ProcessDefinitionMetadataService {
 
     ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
                                                    @Nullable Map<String, Object> variables);
+
+    ProcessInstanceDetail processInstance(String processInstanceId);
 }
