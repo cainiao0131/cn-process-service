@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.cainiao.process.dto.request.StartFlowRequest;
-import org.cainiao.process.dto.response.ProcessActivity;
 import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
@@ -87,16 +86,6 @@ public class ProcessController {
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
         return processService.processInstance(processInstanceId);
-    }
-
-    @GetMapping("process-instance/{processInstanceId}/activities")
-    @Operation(summary = "流程实例事件列表")
-    public IPage<ProcessActivity> processInstanceActivities(
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
-        @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
-
-        return processService.processInstanceActivities(processInstanceId, current, size);
     }
 
     @GetMapping("process-instance/{processInstanceId}/diagram")

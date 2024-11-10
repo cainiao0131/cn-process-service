@@ -6,6 +6,8 @@ import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.StartEvent;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
@@ -29,6 +31,24 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final RepositoryService repositoryService;
+
+    @Override
+    public String getProcessFormKey(String processDefinitionId, String flowElementId) {
+        FlowElement flowElement = getFlowElement(processDefinitionId, flowElementId);
+        if (flowElement instanceof UserTask userTask) {
+            return userTask.getFormKey();
+        }
+        if (flowElement instanceof StartEvent startEvent) {
+            return startEvent.getFormKey();
+        }
+        return null;
+    }
+
+    @Override
+    public String getProcessFormKeyByProcessInstanceId(String processInstanceId, String elementId) {
+        return getProcessFormKey(runtimeService.createProcessInstanceQuery()
+            .processInstanceId(processInstanceId).singleResult().getProcessDefinitionId(), elementId);
+    }
 
     @Override
     public ProcessDefinition getLatestVersionProcessDefinition(String processDefinitionTenantId,
