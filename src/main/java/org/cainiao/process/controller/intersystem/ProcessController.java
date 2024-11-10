@@ -33,7 +33,7 @@ public class ProcessController {
     @Operation(summary = "分页模糊搜索系统下的流程定义列表")
     public IPage<ProcessDefinitionMetadata> processDefinitions(
         @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size,
+        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "搜索关键词") @RequestParam(required = false) String key) {
 
         // TODO 从 Header 中获取调用者的系统 ID
@@ -55,7 +55,7 @@ public class ProcessController {
         @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey,
         @Parameter(description = "是否完成") @RequestParam(required = false) Boolean finished,
         @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size) {
+        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size) {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processService.processInstances(0, processDefinitionKey, finished, current, size);
@@ -93,7 +93,7 @@ public class ProcessController {
     @Operation(summary = "流程实例事件列表")
     public IPage<ProcessActivity> processInstanceActivities(
         @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) long size,
+        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
         return processService.processInstanceActivities(processInstanceId, current, size);

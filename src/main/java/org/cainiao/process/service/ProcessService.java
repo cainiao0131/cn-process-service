@@ -16,12 +16,12 @@ import java.util.Map;
 
 public interface ProcessService {
 
-    IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, long size, String key);
+    IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, int size, String searchKey);
 
     ProcessDefinitionMetadata processDefinition(long systemId, String processDefinitionKey);
 
     IPage<ProcessInstanceResponse> processInstances(long systemId, String processDefinitionKey,
-                                                    Boolean finished, long current, long size);
+                                                    Boolean finished, long current, int size);
 
     ProcessStartEventResponse startProcess(long systemId, String userName,
                                            String processDefinitionKey, Map<String, Object> variables);
@@ -31,7 +31,7 @@ public interface ProcessService {
 
     ProcessInstanceDetail processInstance(String processInstanceId);
 
-    IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, long size);
+    IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, int size);
 
     ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException;
 }

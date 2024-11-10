@@ -79,7 +79,7 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId,
-                                                               long current, long size, String searchKey) {
+                                                               long current, int size, String searchKey) {
         return processDefinitionMetadataMapperService.searchPageBySystemId(systemId, current, size, searchKey);
     }
 
@@ -90,7 +90,7 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public IPage<ProcessInstanceResponse> processInstances(long systemId, String processDefinitionKey,
-                                                           Boolean finished, long current, long size) {
+                                                           Boolean finished, long current, int size) {
         if (!processDefinitionMetadataMapperService.exists(systemId, processDefinitionKey)) {
             throw new BusinessException("未找到流程定义");
         }
@@ -110,7 +110,7 @@ public class ProcessServiceImpl implements ProcessService {
         ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();
         IPage<ProcessInstanceResponse> page = new Page<>(current, size);
         page.setRecords(historicProcessInstanceQuery.orderByProcessInstanceStartTime().desc()
-            .listPage((int) ((current - 1) * size), (int) size)
+            .listPage((int) ((current - 1) * size), size)
             .stream().map(historicProcessInstance -> {
                 ProcessInstanceResponse processInstanceResponse = ProcessInstanceResponse
                     .from(historicProcessInstance, simpleDateFormat);
@@ -230,7 +230,7 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, long size) {
+    public IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, int size) {
         Set<String> activityTypes = new HashSet<>();
         activityTypes.add("startEvent");
         activityTypes.add("userTask");
@@ -244,7 +244,7 @@ public class ProcessServiceImpl implements ProcessService {
             .desc()
             .orderByHistoricActivityInstanceEndTime()
             .desc()
-            .listPage((int) ((current - 1) * size), (int) size);
+            .listPage((int) ((current - 1) * size), size);
         List<ProcessActivity> activityRecords = new ArrayList<>();
         if (!activities.isEmpty()) {
             List<HistoricVariableInstance> variableInstances = historyService

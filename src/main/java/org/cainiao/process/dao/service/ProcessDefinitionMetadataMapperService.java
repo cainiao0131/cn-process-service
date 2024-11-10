@@ -19,7 +19,7 @@ public class ProcessDefinitionMetadataMapperService
     extends ServiceImpl<ProcessDefinitionMetadataMapper, ProcessDefinitionMetadata>
     implements IService<ProcessDefinitionMetadata> {
 
-    public IPage<ProcessDefinitionMetadata> searchPageBySystemId(long systemId, long current, long size, String key) {
+    public IPage<ProcessDefinitionMetadata> searchPageBySystemId(long systemId, long current, int size, String key) {
         IPage<ProcessDefinitionMetadata> page = new Page<>(current, size);
         if (StringUtils.hasText(key)) {
             return page(page, lambdaQuery()
