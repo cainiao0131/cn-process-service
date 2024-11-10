@@ -51,6 +51,27 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     private final HistoryService historyService;
 
     @Override
+    public void completeTask(String userName, String taskId,
+                             Map<String, Object> localVariables, Map<String, Object> processVariables) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String assignee = task.getAssignee();
+        if (!StringUtils.hasText(assignee)) {
+            throw new BusinessException("任务没有委托人!");
+        }
+        if (!assignee.equals(userName)) {
+            throw new BusinessException("只能完成自己的任务!");
+        }
+        if (localVariables != null && !localVariables.isEmpty()) {
+            taskService.setVariablesLocal(taskId, localVariables);
+        }
+        if (processVariables != null && !processVariables.isEmpty()) {
+            taskService.complete(taskId, userName, processVariables);
+        } else {
+            taskService.complete(taskId, userName);
+        }
+    }
+
+    @Override
     public IPage<ProcessActivityResponse> taskActivities(String processInstanceId, String elementId,
                                                          long current, int size) {
         HistoricTaskInstanceQuery historicTaskInstanceQuery = historyService.createHistoricTaskInstanceQuery()
@@ -192,12 +213,11 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     }
 
     @Override
-    public void reassignOwnTask(String userName, ReassignTaskRequest reassignTaskRequest) {
+    public void reassignOwnTask(String userName, String taskId, ReassignTaskRequest reassignTaskRequest) {
         String toUserName = reassignTaskRequest.getToUserName();
         if (userName.equals(toUserName)) {
             return;
         }
-        String taskId = reassignTaskRequest.getTaskId();
         String assignee = taskService.createTaskQuery().taskId(taskId).singleResult().getAssignee();
         if (!StringUtils.hasText(assignee) || !assignee.equals(userName)) {
             throw new BusinessException("只能对分配给自己的任务进行改派!");

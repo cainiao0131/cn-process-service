@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.cainiao.process.dto.request.CompleteTaskRequest;
 import org.cainiao.process.dto.request.ReassignTaskRequest;
 import org.cainiao.process.dto.response.ProcessActivityResponse;
 import org.cainiao.process.dto.response.ProcessTaskResponse;
@@ -22,13 +23,14 @@ public class ProcessTaskController {
 
     private final ProcessTaskService processTaskService;
 
-    @PostMapping("reassign/own-task")
+    @PostMapping("reassign/own-task/{taskId}")
     @Operation(summary = "改派自己的任务")
     public void reassignOwnTask(
+        @Parameter(description = "流程任务 ID", required = true) @PathVariable String taskId,
         @Parameter(description = "改派自己的任务的请求参数") @RequestBody ReassignTaskRequest reassignTaskRequest) {
 
         // TODO 从 Header 中获取调用者的用户名
-        processTaskService.reassignOwnTask(null, reassignTaskRequest);
+        processTaskService.reassignOwnTask(null, taskId, reassignTaskRequest);
     }
 
     @GetMapping("process-instance/{processInstanceId}/tasks")
@@ -79,5 +81,16 @@ public class ProcessTaskController {
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
         return processTaskService.processInstanceActivities(processInstanceId, current, size);
+    }
+
+    @PostMapping("complete/own-task/{taskId}")
+    @Operation(summary = "完成任务")
+    public void completeTask(
+        @Parameter(description = "流程任务 ID", required = true) @PathVariable String taskId,
+        @Parameter(description = "流程任务表单信息") @RequestBody CompleteTaskRequest completeTaskRequest) {
+
+        // TODO 从 Header 中获取调用者的用户名
+        processTaskService.completeTask(null, taskId,
+            completeTaskRequest.getLocalVariables(), completeTaskRequest.getProcessVariables());
     }
 }
