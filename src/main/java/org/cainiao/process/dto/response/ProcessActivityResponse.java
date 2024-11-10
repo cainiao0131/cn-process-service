@@ -16,10 +16,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProcessActivity implements Serializable {
+public class ProcessActivityResponse implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 5092738046880083354L;
+    private static final long serialVersionUID = -7852751594575222833L;
 
     @Schema(description = "活动实例 ID", requiredMode = RequiredMode.REQUIRED)
     private String activityInstanceId;

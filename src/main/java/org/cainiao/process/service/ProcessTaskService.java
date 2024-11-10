@@ -2,13 +2,12 @@ package org.cainiao.process.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.cainiao.process.dto.request.ReassignTaskRequest;
-import org.cainiao.process.dto.response.ProcessActivity;
+import org.cainiao.process.dto.response.ProcessActivityResponse;
 import org.cainiao.process.dto.response.ProcessTaskResponse;
-import org.cainiao.process.dto.response.WorkflowActivityResponse;
 
 public interface ProcessTaskService {
 
-    WorkflowActivityResponse startEventDetail(String processInstanceId, String elementId);
+    ProcessActivityResponse startEventActivity(String processInstanceId, String elementId);
 
     void reassignOwnTask(String userName, ReassignTaskRequest reassignTaskRequest);
 
@@ -17,5 +16,7 @@ public interface ProcessTaskService {
 
     ProcessTaskResponse task(String taskId);
 
-    IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, int size);
+    IPage<ProcessActivityResponse> processInstanceActivities(String processInstanceId, long current, int size);
+
+    IPage<ProcessActivityResponse> taskActivities(String processInstanceId, String elementId, long current, int size);
 }

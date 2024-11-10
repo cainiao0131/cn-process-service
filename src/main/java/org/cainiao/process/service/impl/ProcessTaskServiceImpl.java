@@ -8,10 +8,9 @@ import org.cainiao.process.dao.service.FormVersionMapperService;
 import org.cainiao.process.dto.form.FormItem;
 import org.cainiao.process.dto.form.FormItemConfig;
 import org.cainiao.process.dto.request.ReassignTaskRequest;
-import org.cainiao.process.dto.response.ProcessActivity;
+import org.cainiao.process.dto.response.ProcessActivityResponse;
 import org.cainiao.process.dto.response.ProcessTaskResponse;
 import org.cainiao.process.dto.response.VariableInfo;
-import org.cainiao.process.dto.response.WorkflowActivityResponse;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.ProcessTaskService;
 import org.cainiao.process.service.processengine.ProcessEngineService;
@@ -22,6 +21,8 @@ import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
+import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.variable.api.history.HistoricVariableInstance;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,35 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     private final HistoryService historyService;
 
     @Override
-    public IPage<ProcessActivity> processInstanceActivities(String processInstanceId, long current, int size) {
+    public IPage<ProcessActivityResponse> taskActivities(String processInstanceId, String elementId,
+                                                         long current, int size) {
+        HistoricTaskInstanceQuery historicTaskInstanceQuery = historyService.createHistoricTaskInstanceQuery()
+            .processInstanceId(processInstanceId).taskDefinitionKey(elementId);
+        long count = historicTaskInstanceQuery.count();
+        List<HistoricTaskInstance> historicTaskInstances = historicTaskInstanceQuery
+            .orderByHistoricTaskInstanceStartTime().desc().listPage((int) ((current - 1) * size), size);
+        List<ProcessActivityResponse> taskHistoryRecords = new ArrayList<>();
+        for (HistoricTaskInstance taskInstance : historicTaskInstances) {
+            String taskInstanceId = taskInstance.getId();
+            taskHistoryRecords.add(ProcessActivityResponse.builder()
+                .assignee(taskInstance.getAssignee())
+                .activityInstanceId(taskInstanceId)
+                .createTime(taskInstance.getCreateTime())
+                .endTime(taskInstance.getEndTime())
+                .endReason(taskInstance.getDeleteReason())
+                .variables(getVariables(historyService
+                    .createHistoricVariableInstanceQuery().taskId(taskInstanceId).list(), taskInstance.getFormKey()))
+                .state(taskInstance.getState())
+                .build());
+        }
+        IPage<ProcessActivityResponse> page = new Page<>(current, size);
+        page.setRecords(taskHistoryRecords);
+        page.setTotal(count);
+        return page;
+    }
+
+    @Override
+    public IPage<ProcessActivityResponse> processInstanceActivities(String processInstanceId, long current, int size) {
         Set<String> activityTypes = new HashSet<>();
         activityTypes.add("startEvent");
         activityTypes.add("userTask");
@@ -65,14 +94,14 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
             .orderByHistoricActivityInstanceEndTime()
             .desc()
             .listPage((int) ((current - 1) * size), size);
-        List<ProcessActivity> activityRecords = new ArrayList<>();
+        List<ProcessActivityResponse> activityRecords = new ArrayList<>();
         if (!activities.isEmpty()) {
             List<HistoricVariableInstance> variableInstances = historyService
                 .createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
             HistoricProcessInstance historicProcessInstance = historyService
                 .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             String processDefinitionId = historicProcessInstance.getProcessDefinitionId();
-            ProcessActivity firstProcessActivity = null;
+            ProcessActivityResponse firstProcessActivity = null;
             for (HistoricActivityInstance activityInstance : activities) {
                 String activityType = activityInstance.getActivityType();
                 String deleteReason = activityInstance.getDeleteReason();
@@ -86,7 +115,8 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                 String activityId = activityInstance.getActivityId();
                 String activityInstanceId = activityInstance.getId();
                 String activityName = activityInstance.getActivityName();
-                ProcessActivity workflowActivity = ProcessActivity.builder().activityInstanceId(activityInstanceId)
+                ProcessActivityResponse workflowActivity = ProcessActivityResponse.builder()
+                    .activityInstanceId(activityInstanceId)
                     .activityId(activityId).activityName(activityName).activityType(activityType)
                     .createTime(activityInstance.getStartTime()).endTime(activityInstance.getEndTime())
                     .endReason(deleteReason).assignee(activityInstance.getAssignee()).build();
@@ -111,18 +141,18 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                 activityRecords.add(firstProcessActivity);
             }
         }
-        IPage<ProcessActivity> page = new Page<>(current, size);
+        IPage<ProcessActivityResponse> page = new Page<>(current, size);
         page.setRecords(activityRecords);
         page.setTotal(count);
         return page;
     }
 
     @Override
-    public WorkflowActivityResponse startEventDetail(String processInstanceId, String elementId) {
+    public ProcessActivityResponse startEventActivity(String processInstanceId, String elementId) {
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
             .processInstanceId(processInstanceId).singleResult();
         // TODO 不应该传递开始事件 ID，测试一下开始事件的 elementId 是否等于 historicProcessInstance.getStartActivityId();
-        return WorkflowActivityResponse.builder().assignee(historicProcessInstance.getStartUserId())
+        return ProcessActivityResponse.builder().assignee(historicProcessInstance.getStartUserId())
             .createTime(historicProcessInstance.getStartTime())
             .variables(getVariables(historyService.createHistoricVariableInstanceQuery()
                     .processInstanceId(processInstanceId).list(),
