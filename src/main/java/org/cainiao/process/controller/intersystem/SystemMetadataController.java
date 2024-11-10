@@ -20,6 +20,7 @@ public class SystemMetadataController {
     @Operation(summary = "为系统设置流程相关的元数据")
     public void setSystemMetadata(@Parameter(description = "系统元数据") @RequestBody SystemMetadata systemMetadata) {
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
+        // TODO 根据用户是否参与了建设这个系统的项目判断用户是否有权更新这个系统的工作流相关的元数据
         systemMetadataService.setSystemMetadata(0, null, systemMetadata);
     }
 
@@ -28,6 +29,7 @@ public class SystemMetadataController {
     public SystemMetadata getSystemMetadata(
         @Parameter(description = "系统 ID", required = true) @PathVariable Long systemId) {
 
+        // TODO 根据用户是否参与了建设这个系统的项目判断用户是否有权查看这个系统的工作流相关的元数据
         return systemMetadataService.getSystemMetadata(systemId);
     }
 }
