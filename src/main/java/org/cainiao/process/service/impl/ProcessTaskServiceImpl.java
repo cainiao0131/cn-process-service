@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.cainiao.common.exception.BusinessException;
+import org.cainiao.process.dao.service.FormVersionMapperService;
 import org.cainiao.process.dto.request.ReassignTaskRequest;
 import org.cainiao.process.dto.response.ProcessTaskResponse;
+import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.ProcessTaskService;
+import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.engine.TaskService;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
@@ -25,6 +28,10 @@ import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 @Service
 @RequiredArgsConstructor
 public class ProcessTaskServiceImpl implements ProcessTaskService {
+
+    private final FormVersionMapperService formVersionMapperService;
+    
+    private final ProcessEngineService processEngineService;
 
     private final TaskService taskService;
 
@@ -61,5 +68,28 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
         page.setRecords(taskList);
         page.setTotal(count);
         return page;
+    }
+
+    @Override
+    public ProcessTaskResponse task(String taskId) {
+        return taskDetail(taskService.createTaskQuery().taskId(taskId).singleResult());
+    }
+
+    private ProcessTaskResponse taskDetail(Task task) {
+        ProcessTaskResponse processTaskResponse = ProcessTaskResponse.from(task, SIMPLE_DATE_FORMAT);
+
+        // 流程变量，用于展示任务上下文
+        processTaskResponse.setProcessInstanceDetail(processEngineService.processInstance(task.getProcessInstanceId()));
+        processTaskResponse.setElementId(processEngineService
+            .getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey()).getId());
+
+        // 任务表单
+        String processFormKey = processTaskResponse.getFormKey();
+        if (StringUtils.hasText(processFormKey)) {
+            FormVersion formVersion = formVersionMapperService.fetchByProcessFormKey(processFormKey);
+            processTaskResponse.setFormConfig(formVersion.getFormConfig());
+            processTaskResponse.setFormItems(formVersion.getFormItems());
+        }
+        return processTaskResponse;
     }
 }

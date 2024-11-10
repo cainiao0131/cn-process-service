@@ -10,4 +10,6 @@ public interface ProcessTaskService {
 
     IPage<ProcessTaskResponse> tasks(String userName, String processInstanceId,
                                      long current, int size, String searchKey);
+
+    ProcessTaskResponse task(String taskId);
 }

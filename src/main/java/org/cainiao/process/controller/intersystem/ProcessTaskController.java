@@ -31,7 +31,7 @@ public class ProcessTaskController {
     }
 
     @GetMapping("process-instance/{processInstanceId}/tasks")
-    @Operation(summary = "分页查询用户的流程任务")
+    @Operation(summary = "分页模糊搜索用户的流程任务")
     public IPage<ProcessTaskResponse> tasks(
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId,
         @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
@@ -40,5 +40,13 @@ public class ProcessTaskController {
 
         // TODO 从 Header 中获取调用者的用户名
         return processTaskService.tasks(null, processInstanceId, current, size, key);
+    }
+
+    @GetMapping("task/{taskId}")
+    @Operation(summary = "流程任务详情")
+    public ProcessTaskResponse task(
+        @Parameter(description = "流程任务 ID", required = true) @PathVariable String taskId) {
+
+        return processTaskService.task(taskId);
     }
 }

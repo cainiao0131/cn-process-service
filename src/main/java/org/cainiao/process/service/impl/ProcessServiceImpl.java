@@ -13,7 +13,7 @@ import org.cainiao.process.dto.response.*;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessService;
-import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.StartEvent;
@@ -43,7 +43,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,18 +63,12 @@ public class ProcessServiceImpl implements ProcessService {
     private final FormVersionMapperService formVersionMapperService;
     private final FormMapperService formMapperService;
 
+    private final ProcessEngineService processEngineService;
+
     private final ProcessEngine processEngine;
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
-    private final RepositoryService repositoryService;
     private final FormService formService;
-
-    /**
-     * @Override public FormVersion fetchByFlowFormKey(String flowFormKey) {
-     * String[] startFormInfo = flowFormKey.split(":");
-     * return null;
-     * }
-     */
 
     @Override
     public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId,
@@ -138,27 +131,21 @@ public class ProcessServiceImpl implements ProcessService {
         if (!processDefinitionMetadataMapperService.exists(systemId, processDefinitionKey)) {
             throw new BusinessException("未找到流程定义");
         }
-
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionTenantId(String.valueOf(systemId))
-            .processDefinitionKey(processDefinitionKey)
-            .latestVersion()
-            .singleResult();
+        ProcessDefinition processDefinition = processEngineService
+            .getLatestVersionProcessDefinition(String.valueOf(systemId), processDefinitionKey);
         String processDefinitionId = processDefinition.getId();
-
         // 流程开始事件是否需要填写表单
         if (processDefinition.hasStartFormKey()) {
-            String formKey = formService.getStartFormKey(processDefinitionId);
-            FormVersion formVersion = formVersionMapperService.fetchByProcessFormKey(formKey);
+            String processFormKey = formService.getStartFormKey(processDefinitionId);
+            FormVersion formVersion = formVersionMapperService.fetchByProcessFormKey(processFormKey);
             return ProcessStartEventResponse.builder()
-                .formName(formMapperService.fetchByKey(formKey).getName())
+                .formName(formMapperService.fetchByKey(formVersion.getFormKey()).getName())
                 .processDefinitionId(processDefinitionId)
                 .needForm(true)
                 .formConfig(formVersion.getFormConfig())
                 .formItems(formVersion.getFormItems())
                 .build();
         }
-
         return ProcessStartEventResponse.builder()
             .processInstanceId(startFlowByDefinitionId(userName, processDefinitionId, variables).getProcessInstanceId())
             .processDefinitionId(processDefinitionId).build();
@@ -188,45 +175,7 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Override
     public ProcessInstanceDetail processInstance(String processInstanceId) {
-        ProcessInstance processInstance = runtimeService
-            .createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        // 正在执行的节点 ID
-        Set<String> activeActivityIds = getActiveActivityIds(processInstanceId);
-        /*
-         * 一个活动，可能被重复执行过多次，这会导致一个节点查出多个 HistoricActivityInstance 记录
-         * 这里是绘图用的，需要去重，取最新的那个的状态，并且要排除那些正在执行的节点
-         */
-        Set<String> finishedActivityIds = new HashSet<>();
-        historyService.createHistoricActivityInstanceQuery()
-            .processInstanceId(processInstanceId).finished().orderByHistoricActivityInstanceEndTime().desc().list()
-            .forEach(historicActivityInstance -> {
-                String activityId = historicActivityInstance.getActivityId();
-                if (!activeActivityIds.contains(activityId)) {
-                    finishedActivityIds.add(activityId);
-                }
-            });
-        return ProcessInstanceDetail.builder()
-            .processInstanceId(processInstanceId)
-            .xml(new String(new BpmnXMLConverter().convertToXML(repositoryService
-                .getBpmnModel(processInstance.getProcessDefinitionId())), StandardCharsets.UTF_8))
-            .finishedActivityIds(new ArrayList<>(finishedActivityIds))
-            .activeActivityIds(new ArrayList<>(activeActivityIds))
-            .build();
-    }
-
-    /**
-     * 获取流程实例中正在执行的节点 ID
-     *
-     * @param processInstanceId 流程实例 ID
-     * @return 流程实例中正在执行的节点 ID 列表
-     */
-    private Set<String> getActiveActivityIds(String processInstanceId) {
-        Set<String> activityIds = new HashSet<>();
-        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).list();
-        if (executions != null && !executions.isEmpty()) {
-            activityIds.addAll(executions.stream().map(Execution::getActivityId).filter(Objects::nonNull).toList());
-        }
-        return activityIds;
+        return processEngineService.processInstance(processInstanceId);
     }
 
     @Override
@@ -297,8 +246,8 @@ public class ProcessServiceImpl implements ProcessService {
         return page;
     }
 
-    private String getProcessFormKey(String processDefinitionId, String elementId) {
-        FlowElement flowElement = repositoryService.getBpmnModel(processDefinitionId).getFlowElement(elementId);
+    private String getProcessFormKey(String processDefinitionId, String flowElementId) {
+        FlowElement flowElement = processEngineService.getFlowElement(processDefinitionId, flowElementId);
         if (flowElement instanceof UserTask userTask) {
             return userTask.getFormKey();
         }
@@ -345,26 +294,6 @@ public class ProcessServiceImpl implements ProcessService {
         return map;
     }
 
-    public List<FormVariable> taskVariables(String processInstanceId, String elementId) {
-        String processFormKey = getProcessFormKeyByProcessInstanceId(processInstanceId, elementId);
-        if (!StringUtils.hasText(processFormKey)) {
-            return Collections.emptyList();
-        }
-        FormVersion formVersion = formVersionMapperService.fetchByProcessFormKey(processFormKey);
-        List<FormItem> formItems = jsonToList(formVersion.getFormItems(), FormItem.class);
-        List<FormVariable> taskVariables = new ArrayList<>();
-        formItems.forEach(formItem -> {
-            FormItemConfig config = formItem.getConfig();
-            Object value = runtimeService.getVariable(processInstanceId, config.getName());
-            taskVariables.add(FormVariable.builder()
-                .type(formItem.getType())
-                .name(config.getLabel())
-                .value(value == null ? "" : value.toString())
-                .build());
-        });
-        return taskVariables;
-    }
-
     @Override
     public ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException {
         ProcessInstance processInstance = runtimeService
@@ -376,7 +305,7 @@ public class ProcessServiceImpl implements ProcessService {
             activityIds.addAll(executions.stream().map(Execution::getActivityId).filter(Objects::nonNull).toList());
         }
 
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
+        BpmnModel bpmnModel = processEngineService.getBpmnModel(processInstance.getProcessDefinitionId());
         ProcessEngineConfiguration processEngineConfiguration = processEngine.getProcessEngineConfiguration();
         ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
         try (InputStream inputStream = diagramGenerator
