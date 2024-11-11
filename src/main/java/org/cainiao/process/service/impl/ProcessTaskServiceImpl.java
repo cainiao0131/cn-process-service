@@ -15,11 +15,13 @@ import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.ProcessTaskService;
 import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
@@ -55,6 +57,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
 
     private final TaskService taskService;
     private final HistoryService historyService;
+    private final RuntimeService runtimeService;
 
     @Override
     public void completeTask(String taskId, Map<String, Object> localVariables,
@@ -75,6 +78,15 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
         } else {
             taskService.complete(taskId, userName);
         }
+    }
+
+    @Override
+    public void jumpToTask(String processInstanceId, String taskKey) {
+        runtimeService.createChangeActivityStateBuilder()
+            .processInstanceId(processInstanceId)
+            .moveActivityIdsToSingleActivityId(taskService.createTaskQuery().processInstanceId(processInstanceId)
+                .list().stream().map(TaskInfo::getTaskDefinitionKey).toList(), taskKey)
+            .changeState();
     }
 
     @Override

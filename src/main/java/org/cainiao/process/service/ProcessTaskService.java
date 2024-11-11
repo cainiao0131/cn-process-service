@@ -24,4 +24,6 @@ public interface ProcessTaskService {
 
     void completeTask(String taskId, Map<String, Object> localVariables,
                       Map<String, Object> processVariables, String userName);
+
+    void jumpToTask(String processInstanceId, String taskId);
 }

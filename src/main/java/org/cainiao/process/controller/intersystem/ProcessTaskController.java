@@ -42,10 +42,10 @@ public class ProcessTaskController {
     @GetMapping("process-instance/{processInstanceId}/tasks")
     @Operation(summary = "分页模糊搜索用户的流程任务")
     public IPage<ProcessTaskResponse> tasks(
-        @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId,
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
-        @Parameter(description = "搜索关键词") @RequestParam(required = false) String key) {
+        @Parameter(description = "流程实例 ID") @PathVariable String processInstanceId,
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
+        @Parameter(description = "搜索关键词") @RequestParam String key) {
 
         // TODO 从 Header 中获取调用者的用户名
         return processTaskService.tasks(null, processInstanceId, current, size, key);
@@ -71,8 +71,8 @@ public class ProcessTaskController {
     @GetMapping("process-instance/{processInstanceId}/task/{elementId}/history-records")
     @Operation(summary = "流程任务的事件列表，当一个任务被执行多次时会形成事件列表")
     public IPage<ProcessActivityResponse> taskActivities(
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "流程实例ID", required = true) @PathVariable String processInstanceId,
         @Parameter(description = "流程元素ID", required = true) @PathVariable String elementId) {
 
@@ -82,8 +82,8 @@ public class ProcessTaskController {
     @GetMapping("process-instance/{processInstanceId}/activities")
     @Operation(summary = "流程实例的事件列表")
     public IPage<ProcessActivityResponse> processInstanceActivities(
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId) {
 
         return processTaskService.processInstanceActivities(processInstanceId, current, size);
@@ -98,5 +98,14 @@ public class ProcessTaskController {
         // TODO 从 Header 中获取调用者的用户名
         processTaskService.completeTask(taskId,
             completeTaskRequest.getLocalVariables(), completeTaskRequest.getProcessVariables(), null);
+    }
+
+    @PostMapping("process-instance/{processInstanceId}/task/{taskId}")
+    @Operation(summary = "让流程跳转到目标用户任务")
+    public void jumpToTask(
+        @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId,
+        @Parameter(description = "跳转目标用户任务 Key", required = true) @PathVariable String taskKey) {
+
+        processTaskService.jumpToTask(processInstanceId, taskKey);
     }
 }

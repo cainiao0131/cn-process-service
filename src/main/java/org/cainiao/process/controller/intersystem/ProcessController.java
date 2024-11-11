@@ -50,9 +50,9 @@ public class ProcessController {
     @GetMapping("process-definitions")
     @Operation(summary = "分页模糊搜索系统下的流程定义列表")
     public IPage<ProcessDefinitionMetadata> processDefinitions(
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size,
-        @Parameter(description = "搜索关键词") @RequestParam(required = false) String key) {
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
+        @Parameter(description = "搜索关键词") @RequestParam String key) {
 
         // TODO 从 Header 中获取调用者的系统 ID
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
@@ -97,9 +97,9 @@ public class ProcessController {
     @Operation(summary = "分页查询某流程定义下的流程实例")
     public IPage<ProcessInstanceResponse> processInstances(
         @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey,
-        @Parameter(description = "是否完成") @RequestParam(required = false) Boolean finished,
-        @Parameter(description = "页码") @RequestParam(required = false, defaultValue = DEFAULT_PAGE) long current,
-        @Parameter(description = "页面大小") @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int size) {
+        @Parameter(description = "是否完成") @RequestParam Boolean finished,
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size) {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processService.processInstances(0, processDefinitionKey, finished, current, size);
