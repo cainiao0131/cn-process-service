@@ -76,9 +76,10 @@ public class ProcessController {
     public void deleteProcessDefinition(
         @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
 
+        // TODO 从 Header 中获取调用者的系统 ID 和用户名
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
         // 用户是否参与了建设这个流程定义所属系统的项目的数据权限校验，由【技术中台】的聚合服务完成
-        processService.deleteProcessDefinition(processDefinitionKey);
+        processService.deleteProcessDefinition(0, processDefinitionKey, null);
     }
 
     @PostMapping("deploy/process-definition/{processDefinitionKey}")

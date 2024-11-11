@@ -88,8 +88,14 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public void deleteProcessDefinition(String processDefinitionKey) {
-        // TODO 先停止所有在途流程实例，然后再将流程定义元数据设置为已删除状态
+    public void deleteProcessDefinition(long systemId, String processDefinitionKey, String userName) {
+        ProcessDefinitionMetadata processDefinitionMetadata = processDefinition(systemId, processDefinitionKey);
+        if (processDefinitionMetadata == null) {
+            return;
+        }
+        // TODO 停止所有在途流程实例
+        processDefinitionMetadata.setStatus(StatusEnum.DELETED);
+        processDefinitionMetadataMapperService.updateProcessDefinitionMetadataById(processDefinitionMetadata, userName);
     }
 
     @Override
