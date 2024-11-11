@@ -100,6 +100,11 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
+    public void stopProcessInstance(String processInstanceId, String stopReason, String userName) {
+        processEngineService.deleteProcessInstance(processInstanceId, stopReason, userName);
+    }
+
+    @Override
     public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId,
                                                                long current, int size, String searchKey) {
         return processDefinitionMetadataMapperService.searchPageBySystemId(systemId, current, size, searchKey);

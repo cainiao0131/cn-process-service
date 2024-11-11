@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.cainiao.process.util.Util.fixString;
+
 /**
  * <br />
  * <p>
@@ -53,7 +55,7 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     @Override
     public void deleteProcessInstance(String processInstanceId, String deleteReason, String userName) {
         runtimeService.deleteProcessInstance(processInstanceId, String
-            .format("“ %s ” 强制删除流程实例，原因：%s", userName, deleteReason));
+            .format("“ %s ” 强制删除流程实例，原因：%s", userName, fixString(deleteReason)));
     }
 
     @Override

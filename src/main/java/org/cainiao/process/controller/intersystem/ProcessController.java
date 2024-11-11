@@ -141,4 +141,14 @@ public class ProcessController {
 
         return processService.processDiagram(processInstanceId);
     }
+
+    @DeleteMapping("process-instance/{processInstanceId}")
+    @Operation(summary = "停止流程实例")
+    public void stopProcessInstance(
+        @Parameter(description = "流程实例 ID", required = true) @PathVariable String processInstanceId,
+        @Parameter(description = "停止理由", required = true) @RequestParam String stopReason) {
+
+        // TODO 从 Header 中获取调用者的用户名
+        processService.stopProcessInstance(processInstanceId, stopReason, null);
+    }
 }

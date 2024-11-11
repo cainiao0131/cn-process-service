@@ -38,4 +38,6 @@ public interface ProcessService {
     ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException;
 
     void deleteProcessDefinition(long systemId, String processDefinitionKey, String userName);
+
+    void stopProcessInstance(String processInstanceId, String stopReason, String userName);
 }
