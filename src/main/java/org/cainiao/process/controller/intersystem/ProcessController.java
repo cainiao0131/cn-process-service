@@ -13,7 +13,14 @@ import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.ProcessService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -35,6 +42,7 @@ public class ProcessController {
         @Parameter(description = "流程定义元数据") @RequestBody ProcessDefinitionMetadata processDefinitionMetadata) {
 
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        // 用户是否参与了建设这个系统的项目的数据权限校验，由【技术中台】的聚合服务完成
         processService.setProcessDefinitionMetadata(systemId, processDefinitionMetadata);
     }
 
@@ -52,10 +60,18 @@ public class ProcessController {
     @GetMapping("process-definition/{processDefinitionKey}")
     @Operation(summary = "流程定义详情")
     public ProcessDefinitionMetadata processDefinition(
-        @Parameter(description = "流程定义Key", required = true) @PathVariable String processDefinitionKey) {
+        @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
 
         // TODO 从 Header 中获取调用者的系统 ID
         return processService.processDefinition(0, processDefinitionKey);
+    }
+
+    @DeleteMapping("process-definition/{processDefinitionKey}")
+    @Operation(summary = "删除流程定义")
+    public void deleteProcessDefinition(
+        @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
+
+        processService.deleteProcessDefinition(processDefinitionKey);
     }
 
     @GetMapping("process-definition/{processDefinitionKey}/instances")

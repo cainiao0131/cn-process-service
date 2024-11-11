@@ -33,4 +33,6 @@ public interface ProcessService {
     ProcessInstanceDetail processInstance(String processInstanceId);
 
     ResponseEntity<Resource> processDiagram(String processInstanceId) throws IOException;
+
+    void deleteProcessDefinition(String processDefinitionKey);
 }

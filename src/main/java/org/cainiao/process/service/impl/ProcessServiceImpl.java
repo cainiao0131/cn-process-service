@@ -16,7 +16,11 @@ import org.cainiao.process.service.ProcessService;
 import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.*;
+import org.flowable.engine.FormService;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
@@ -34,10 +38,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.cainiao.process.util.ProcessUtil.validateForm;
+import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 
 /**
  * <br />
@@ -58,6 +66,16 @@ public class ProcessServiceImpl implements ProcessService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final FormService formService;
+
+    @Override
+    public void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata) {
+        // TODO
+    }
+
+    @Override
+    public void deleteProcessDefinition(String processDefinitionKey) {
+        // TODO
+    }
 
     @Override
     public IPage<ProcessDefinitionMetadata> processDefinitions(long systemId,
@@ -88,14 +106,13 @@ public class ProcessServiceImpl implements ProcessService {
         }
 
         int count = (int) historicProcessInstanceQuery.count();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();
         IPage<ProcessInstanceResponse> page = new Page<>(current, size);
         page.setRecords(historicProcessInstanceQuery.orderByProcessInstanceStartTime().desc()
             .listPage((int) ((current - 1) * size), size)
             .stream().map(historicProcessInstance -> {
                 ProcessInstanceResponse processInstanceResponse = ProcessInstanceResponse
-                    .from(historicProcessInstance, simpleDateFormat);
+                    .from(historicProcessInstance, SIMPLE_DATE_FORMAT);
                 if (!processInstanceResponse.isEnded()) {
                     // 未结束的流程，查询一下：哪些节点正在执行、是否处于暂停状态
                     List<Execution> executions = runtimeService.createExecutionQuery()
