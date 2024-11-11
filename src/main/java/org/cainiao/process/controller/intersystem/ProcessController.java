@@ -28,6 +28,16 @@ public class ProcessController {
 
     private final ProcessService processService;
 
+    @PostMapping("system/{systemId}/process-definition")
+    @Operation(summary = "为系统添加或编辑流程定义元数据")
+    public void setProcessDefinitionMetadata(
+        @Parameter(description = "系统 ID", required = true) @PathVariable Long systemId,
+        @Parameter(description = "流程定义元数据") @RequestBody ProcessDefinitionMetadata processDefinitionMetadata) {
+
+        // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        processService.setProcessDefinitionMetadata(systemId, processDefinitionMetadata);
+    }
+
     @GetMapping("process-definitions")
     @Operation(summary = "分页模糊搜索系统下的流程定义列表")
     public IPage<ProcessDefinitionMetadata> processDefinitions(
