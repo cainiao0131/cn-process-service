@@ -1,11 +1,14 @@
 package org.cainiao.process.dao.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.cainiao.common.exception.BusinessException;
 import org.cainiao.process.dao.mapper.FormMapper;
 import org.cainiao.process.dto.FormWithVersion;
+import org.cainiao.process.dto.response.FormResponse;
 import org.cainiao.process.entity.Form;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -19,6 +22,21 @@ import java.time.LocalDateTime;
  */
 @Service
 public class FormMapperService extends ServiceImpl<FormMapper, Form> implements IService<Form> {
+
+    public IPage<FormResponse> forms(long systemId, long current, int size, String key) {
+        LambdaQueryChainWrapper<Form> cnd = lambdaQuery().eq(Form::getSystemId, systemId);
+        if (StringUtils.hasText(key)) {
+            cnd.and(lambdaQueryWrapper -> lambdaQueryWrapper.like(Form::getKey, key)
+                .or().like(Form::getName, key).or().like(Form::getDescription, key));
+        }
+        long count = cnd.count();
+//        Sql sql = sql("flow.forms.with.version");
+//        sql.setCondition(cnd);
+        IPage<FormResponse> page = new Page<>(current, size);
+        // TODO page.setRecords(null);
+        page.setTotal(count);
+        return page;
+    }
 
     public Form fetchByKey(String key) {
         if (!StringUtils.hasText(key)) {

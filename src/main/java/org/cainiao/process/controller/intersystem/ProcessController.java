@@ -38,7 +38,7 @@ public class ProcessController {
     @PostMapping("system/{systemId}/process-definition")
     @Operation(summary = "为系统添加或编辑流程定义元数据")
     public void setProcessDefinitionMetadata(
-        @Parameter(description = "系统 ID", required = true) @PathVariable Long systemId,
+        @Parameter(description = "系统 ID", required = true) @PathVariable long systemId,
         @Parameter(description = "流程定义元数据") @RequestBody ProcessDefinitionMetadata processDefinitionMetadata) {
 
         // TODO 从 Header 中获取调用者的用户名
