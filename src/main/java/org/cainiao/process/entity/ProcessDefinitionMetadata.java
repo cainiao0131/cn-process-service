@@ -53,6 +53,10 @@ public class ProcessDefinitionMetadata extends IdBaseEntity {
     @Schema(description = "流程定义最新编辑中的 BPMN 规范的 XML，要么对应流程引擎最新版本，要么还没发布到流程引擎")
     private String xml;
 
+    @TableField(value = "pdm_category")
+    @Schema(description = "流程定义分类")
+    private String category;
+
     @TableField(value = "pdm_version", insertStrategy = FieldStrategy.NOT_NULL)
     @Schema(description = "流程定义在流程引擎中的最新版本")
     private Integer version;

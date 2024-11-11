@@ -20,6 +20,7 @@ import org.flowable.engine.FormService;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -66,6 +67,24 @@ public class ProcessServiceImpl implements ProcessService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final FormService formService;
+    private final RepositoryService repositoryService;
+
+    @Override
+    public void deployProcessDefinition(String processDefinitionKey, long systemId, String userName) {
+        ProcessDefinitionMetadata processDefinitionMetadata = processDefinition(systemId, processDefinitionKey);
+        if (processDefinitionMetadata == null) {
+            throw new BusinessException("流程定义不存在!");
+        }
+        deployProcessDefinition(processDefinitionMetadata, systemId, userName);
+    }
+
+    private void deployProcessDefinition(ProcessDefinitionMetadata processDefinitionMetadata,
+                                         long systemId, String userName) {
+        processDefinitionMetadataMapperService.deployProcessDefinition(processDefinitionMetadata.getId(),
+            repositoryService.createProcessDefinitionQuery().deploymentId(processEngineService
+                .deployProcessDefinition(processDefinitionMetadata, systemId).getId()).singleResult().getVersion(),
+            userName);
+    }
 
     @Override
     public void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata) {

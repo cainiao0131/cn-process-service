@@ -2,6 +2,7 @@ package org.cainiao.process.service.processengine.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.cainiao.process.dto.response.ProcessInstanceDetail;
+import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
@@ -11,13 +12,20 @@ import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * <br />
@@ -31,6 +39,22 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final RepositoryService repositoryService;
+
+    @Override
+    public Deployment deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata,
+                                              long systemId) {
+        /*
+         * 将服务任务的 type 由 bpmn:ServiceTask 改为空字符串，否则在部署的校验阶段会抛异常：无效的 type
+         * 只有 camel 或空字符串不会进行任何校验，但是设置为 camel 后边的相关操作又会失败，因此只能设置为空字符串
+         */
+        String xml = processDefinitionMetadata.getXml().replace("bpmn:ServiceTask", "");
+        return repositoryService.createDeployment()
+            .addInputStream(processDefinitionMetadata.getProcessDefinitionKey() + ".bpmn",
+                new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
+            .category(processDefinitionMetadata.getCategory())
+            .tenantId(String.valueOf(systemId))
+            .deploy();
+    }
 
     @Override
     public String getProcessFormKey(String processDefinitionId, String flowElementId) {

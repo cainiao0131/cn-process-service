@@ -54,6 +54,8 @@ public class ProcessController {
         @Parameter(description = "搜索关键词") @RequestParam(required = false) String key) {
 
         // TODO 从 Header 中获取调用者的系统 ID
+        // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        // 用户是否参与了建设这个系统的项目的数据权限校验，由【技术中台】的聚合服务完成
         return processService.processDefinitions(0, current, size, key);
     }
 
@@ -63,6 +65,8 @@ public class ProcessController {
         @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
 
         // TODO 从 Header 中获取调用者的系统 ID
+        // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        // 用户是否参与了建设这个流程定义所属系统的项目的数据权限校验，由【技术中台】的聚合服务完成
         return processService.processDefinition(0, processDefinitionKey);
     }
 
@@ -71,7 +75,20 @@ public class ProcessController {
     public void deleteProcessDefinition(
         @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
 
+        // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        // 用户是否参与了建设这个流程定义所属系统的项目的数据权限校验，由【技术中台】的聚合服务完成
         processService.deleteProcessDefinition(processDefinitionKey);
+    }
+
+    @PostMapping("deploy/process-definition/{processDefinitionKey}")
+    @Operation(summary = "部署流程定义")
+    public void deployProcessDefinition(
+        @Parameter(description = "流程定义 Key", required = true) @PathVariable String processDefinitionKey) {
+
+        // TODO 从 Header 中获取调用者的系统 ID 和用户名
+        // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
+        // 用户是否参与了建设这个流程定义所属系统的项目的数据权限校验，由【技术中台】的聚合服务完成
+        processService.deployProcessDefinition(processDefinitionKey, 0, null);
     }
 
     @GetMapping("process-definition/{processDefinitionKey}/instances")

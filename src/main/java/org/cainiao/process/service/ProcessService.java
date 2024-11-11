@@ -15,6 +15,8 @@ import java.util.Map;
 
 public interface ProcessService {
 
+    void deployProcessDefinition(String processDefinitionKey, long systemId, String userName);
+
     void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata);
 
     IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, int size, String searchKey);
