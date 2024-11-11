@@ -38,7 +38,7 @@ public class ProcessDefinitionMetadataMapperService
         Long currentId = processDefinitionMetadata.getId();
         LambdaQueryChainWrapper<ProcessDefinitionMetadata> sameNameCnd = getSystemLambdaQuery(systemId)
             .eq(ProcessDefinitionMetadata::getName, processDefinitionMetadata.getName());
-        if (currentId == null || currentId <= 0) {
+        if (currentId == null) {
             // 添加
             if (lambdaQuery(systemId, processDefinitionMetadata.getProcessDefinitionKey()).exists()) {
                 throw new BusinessException("流程定义 Key 重复!");
