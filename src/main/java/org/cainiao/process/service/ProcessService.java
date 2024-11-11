@@ -15,7 +15,7 @@ import java.util.Map;
 
 public interface ProcessService {
 
-    void deployProcessDefinition(String processDefinitionKey, long systemId, String userName);
+    void deployProcessDefinition(long systemId, String processDefinitionKey, String userName);
 
     void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata,
                                       String userName);
@@ -27,11 +27,11 @@ public interface ProcessService {
     IPage<ProcessInstanceResponse> processInstances(long systemId, String processDefinitionKey,
                                                     Boolean finished, long current, int size);
 
-    ProcessStartEventResponse startProcess(long systemId, String userName,
-                                           String processDefinitionKey, Map<String, Object> variables);
+    ProcessStartEventResponse startProcess(long systemId, String processDefinitionKey,
+                                           Map<String, Object> variables, String userName);
 
-    ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
-                                                   @Nullable Map<String, Object> variables);
+    ProcessInstance startFlowByFormAndDefinitionId(String processDefinitionId,
+                                                   @Nullable Map<String, Object> variables, String userName);
 
     ProcessInstanceDetail processInstance(String processInstanceId);
 

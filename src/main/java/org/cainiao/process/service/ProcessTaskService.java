@@ -11,7 +11,7 @@ public interface ProcessTaskService {
 
     ProcessActivityResponse startEventActivity(String processInstanceId, String elementId);
 
-    void reassignOwnTask(String userName, String taskId, ReassignTaskRequest reassignTaskRequest);
+    void reassignOwnTask(String taskId, ReassignTaskRequest reassignTaskRequest, String userName);
 
     IPage<ProcessTaskResponse> tasks(String userName, String processInstanceId,
                                      long current, int size, String searchKey);
@@ -22,6 +22,6 @@ public interface ProcessTaskService {
 
     IPage<ProcessActivityResponse> taskActivities(String processInstanceId, String elementId, long current, int size);
 
-    void completeTask(String userName, String taskId,
-                      Map<String, Object> localVariables, Map<String, Object> processVariables);
+    void completeTask(String taskId, Map<String, Object> localVariables,
+                      Map<String, Object> processVariables, String userName);
 }

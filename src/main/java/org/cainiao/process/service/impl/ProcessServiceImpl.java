@@ -69,7 +69,7 @@ public class ProcessServiceImpl implements ProcessService {
     private final FormService formService;
 
     @Override
-    public void deployProcessDefinition(String processDefinitionKey, long systemId, String userName) {
+    public void deployProcessDefinition(long systemId, String processDefinitionKey, String userName) {
         ProcessDefinitionMetadata processDefinitionMetadata = processDefinition(systemId, processDefinitionKey);
         if (processDefinitionMetadata == null) {
             throw new BusinessException("流程定义不存在!");
@@ -93,7 +93,8 @@ public class ProcessServiceImpl implements ProcessService {
         if (processDefinitionMetadata == null) {
             return;
         }
-        // TODO 停止所有在途流程实例
+        // 停止所有在途流程实例
+        processEngineService.deleteProcessDefinition(systemId, processDefinitionKey, userName);
         processDefinitionMetadata.setStatus(StatusEnum.DELETED);
         processDefinitionMetadataMapperService.updateProcessDefinitionMetadataById(processDefinitionMetadata, userName);
     }
@@ -116,8 +117,8 @@ public class ProcessServiceImpl implements ProcessService {
             throw new BusinessException("未找到流程定义");
         }
 
-        HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService
-            .createHistoricProcessInstanceQuery().processDefinitionKey(processDefinitionKey);
+        HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceTenantId(String.valueOf(systemId)).processDefinitionKey(processDefinitionKey);
         if (finished != null) {
             if (finished) {
                 historicProcessInstanceQuery.finished();
@@ -153,8 +154,8 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public ProcessStartEventResponse startProcess(long systemId, String userName,
-                                                  String processDefinitionKey, Map<String, Object> variables) {
+    public ProcessStartEventResponse startProcess(long systemId, String processDefinitionKey,
+                                                  Map<String, Object> variables, String userName) {
         if (!processDefinitionMetadataMapperService.exists(systemId, processDefinitionKey)) {
             throw new BusinessException("未找到流程定义");
         }
@@ -179,8 +180,8 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
-    public ProcessInstance startFlowByFormAndDefinitionId(String userName, String processDefinitionId,
-                                                          @Nullable Map<String, Object> variables) {
+    public ProcessInstance startFlowByFormAndDefinitionId(String processDefinitionId,
+                                                          @Nullable Map<String, Object> variables, String userName) {
         // 校验表单，即 formItems 中的必填项在 variables 中是否都有正确类型的值
         validateForm(formVersionMapperService
             .fetchByProcessFormKey(formService.getStartFormKey(processDefinitionId)), variables);

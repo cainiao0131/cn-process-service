@@ -90,7 +90,7 @@ public class ProcessController {
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
         // 用户是否参与了建设这个流程定义所属系统的项目的数据权限校验，由【技术中台】的聚合服务完成
-        processService.deployProcessDefinition(processDefinitionKey, 0, null);
+        processService.deployProcessDefinition(0, processDefinitionKey, null);
     }
 
     @GetMapping("process-definition/{processDefinitionKey}/instances")
@@ -111,8 +111,8 @@ public class ProcessController {
         @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
 
         // TODO 从 Header 中获取调用者的系统 ID 和用户名
-        return processService.startProcess(0, null,
-            startFlowRequest.getProcessDefinitionKey(), startFlowRequest.getVariables());
+        return processService.startProcess(0, startFlowRequest.getProcessDefinitionKey(),
+            startFlowRequest.getVariables(), null);
     }
 
     @PostMapping("form-process-instance")
@@ -121,8 +121,8 @@ public class ProcessController {
         @Parameter(description = "发起流程请求参数") @RequestBody StartFlowRequest startFlowRequest) {
 
         // TODO 从 Header 中获取调用者的用户名
-        return processService.startFlowByFormAndDefinitionId(null,
-            startFlowRequest.getProcessDefinitionId(), startFlowRequest.getVariables()).getProcessInstanceId();
+        return processService.startFlowByFormAndDefinitionId(startFlowRequest.getProcessDefinitionId(),
+            startFlowRequest.getVariables(), null).getProcessInstanceId();
     }
 
     @GetMapping("process-instance/{processInstanceId}")

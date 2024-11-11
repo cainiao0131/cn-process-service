@@ -22,4 +22,8 @@ public interface ProcessEngineService {
     ProcessDefinition getLatestVersionProcessDefinition(String processDefinitionTenantId, String processDefinitionKey);
 
     Integer deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata, long systemId);
+
+    void deleteProcessDefinition(long systemId, String processDefinitionKey, String userName);
+
+    void deleteProcessInstance(String processInstanceId, String deleteReason, String userName);
 }

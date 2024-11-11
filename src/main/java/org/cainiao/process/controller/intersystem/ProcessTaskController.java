@@ -10,7 +10,13 @@ import org.cainiao.process.dto.request.ReassignTaskRequest;
 import org.cainiao.process.dto.response.ProcessActivityResponse;
 import org.cainiao.process.dto.response.ProcessTaskResponse;
 import org.cainiao.process.service.ProcessTaskService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE;
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
@@ -30,7 +36,7 @@ public class ProcessTaskController {
         @Parameter(description = "改派自己的任务的请求参数") @RequestBody ReassignTaskRequest reassignTaskRequest) {
 
         // TODO 从 Header 中获取调用者的用户名
-        processTaskService.reassignOwnTask(null, taskId, reassignTaskRequest);
+        processTaskService.reassignOwnTask(taskId, reassignTaskRequest, null);
     }
 
     @GetMapping("process-instance/{processInstanceId}/tasks")
@@ -90,7 +96,7 @@ public class ProcessTaskController {
         @Parameter(description = "流程任务表单信息") @RequestBody CompleteTaskRequest completeTaskRequest) {
 
         // TODO 从 Header 中获取调用者的用户名
-        processTaskService.completeTask(null, taskId,
-            completeTaskRequest.getLocalVariables(), completeTaskRequest.getProcessVariables());
+        processTaskService.completeTask(taskId,
+            completeTaskRequest.getLocalVariables(), completeTaskRequest.getProcessVariables(), null);
     }
 }

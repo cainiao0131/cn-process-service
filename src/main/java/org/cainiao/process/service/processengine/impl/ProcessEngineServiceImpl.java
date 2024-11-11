@@ -12,6 +12,7 @@ import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
@@ -39,6 +40,21 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final RepositoryService repositoryService;
+
+    @Override
+    public void deleteProcessDefinition(long systemId, String processDefinitionKey, String userName) {
+        HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceTenantId(String.valueOf(systemId)).processDefinitionKey(processDefinitionKey)
+            .unfinished();
+        historicProcessInstanceQuery.list().forEach(historicProcessInstance ->
+            deleteProcessInstance(historicProcessInstance.getId(), "删除流程定义", userName));
+    }
+
+    @Override
+    public void deleteProcessInstance(String processInstanceId, String deleteReason, String userName) {
+        runtimeService.deleteProcessInstance(processInstanceId, String
+            .format("“ %s ” 强制删除流程实例，原因：%s", userName, deleteReason));
+    }
 
     @Override
     public Integer deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata,

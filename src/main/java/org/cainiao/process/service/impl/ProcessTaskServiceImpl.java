@@ -28,7 +28,13 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.cainiao.process.util.JsonUtil.jsonToList;
@@ -51,8 +57,8 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     private final HistoryService historyService;
 
     @Override
-    public void completeTask(String userName, String taskId,
-                             Map<String, Object> localVariables, Map<String, Object> processVariables) {
+    public void completeTask(String taskId, Map<String, Object> localVariables,
+                             Map<String, Object> processVariables, String userName) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         String assignee = task.getAssignee();
         if (!StringUtils.hasText(assignee)) {
@@ -213,7 +219,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     }
 
     @Override
-    public void reassignOwnTask(String userName, String taskId, ReassignTaskRequest reassignTaskRequest) {
+    public void reassignOwnTask(String taskId, ReassignTaskRequest reassignTaskRequest, String userName) {
         String toUserName = reassignTaskRequest.getToUserName();
         if (userName.equals(toUserName)) {
             return;
