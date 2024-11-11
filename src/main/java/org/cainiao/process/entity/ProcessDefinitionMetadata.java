@@ -83,7 +83,7 @@ public class ProcessDefinitionMetadata extends IdBaseEntity {
     @Getter
     @AllArgsConstructor
     public enum StatusEnum implements ICodeBook {
-        NEW("new", "未部署"), DEPLOYED("deployed", "已部署");
+        NEW("new", "未部署"), DEPLOYED("deployed", "已部署"), DELETED("deleted", "已删除");
 
         final String code;
         final String description;

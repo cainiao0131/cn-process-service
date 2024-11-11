@@ -41,19 +41,21 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     private final RepositoryService repositoryService;
 
     @Override
-    public Deployment deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata,
-                                              long systemId) {
+    public Integer deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata,
+                                           long systemId) {
         /*
          * 将服务任务的 type 由 bpmn:ServiceTask 改为空字符串，否则在部署的校验阶段会抛异常：无效的 type
          * 只有 camel 或空字符串不会进行任何校验，但是设置为 camel 后边的相关操作又会失败，因此只能设置为空字符串
          */
         String xml = processDefinitionMetadata.getXml().replace("bpmn:ServiceTask", "");
-        return repositoryService.createDeployment()
+        Deployment deployment = repositoryService.createDeployment()
             .addInputStream(processDefinitionMetadata.getProcessDefinitionKey() + ".bpmn",
                 new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
             .category(processDefinitionMetadata.getCategory())
             .tenantId(String.valueOf(systemId))
             .deploy();
+        return repositoryService.createProcessDefinitionQuery()
+            .deploymentId(deployment.getId()).singleResult().getVersion();
     }
 
     @Override

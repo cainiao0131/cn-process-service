@@ -4,7 +4,6 @@ import org.cainiao.process.dto.response.ProcessInstanceDetail;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
-import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.lang.NonNull;
 
@@ -22,5 +21,5 @@ public interface ProcessEngineService {
 
     ProcessDefinition getLatestVersionProcessDefinition(String processDefinitionTenantId, String processDefinitionKey);
 
-    Deployment deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata, long systemId);
+    Integer deployProcessDefinition(@NonNull ProcessDefinitionMetadata processDefinitionMetadata, long systemId);
 }

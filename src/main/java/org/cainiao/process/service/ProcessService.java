@@ -17,7 +17,8 @@ public interface ProcessService {
 
     void deployProcessDefinition(String processDefinitionKey, long systemId, String userName);
 
-    void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata);
+    void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata,
+                                      String userName);
 
     IPage<ProcessDefinitionMetadata> processDefinitions(long systemId, long current, int size, String searchKey);
 

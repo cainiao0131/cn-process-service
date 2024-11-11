@@ -12,6 +12,7 @@ import org.cainiao.process.dto.response.ProcessInstanceResponse;
 import org.cainiao.process.dto.response.ProcessStartEventResponse;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
+import org.cainiao.process.entity.ProcessDefinitionMetadata.StatusEnum;
 import org.cainiao.process.service.ProcessService;
 import org.cainiao.process.service.processengine.ProcessEngineService;
 import org.flowable.bpmn.model.BpmnModel;
@@ -20,7 +21,6 @@ import org.flowable.engine.FormService;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
-import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -67,7 +67,6 @@ public class ProcessServiceImpl implements ProcessService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
     private final FormService formService;
-    private final RepositoryService repositoryService;
 
     @Override
     public void deployProcessDefinition(String processDefinitionKey, long systemId, String userName) {
@@ -75,25 +74,22 @@ public class ProcessServiceImpl implements ProcessService {
         if (processDefinitionMetadata == null) {
             throw new BusinessException("流程定义不存在!");
         }
-        deployProcessDefinition(processDefinitionMetadata, systemId, userName);
-    }
-
-    private void deployProcessDefinition(ProcessDefinitionMetadata processDefinitionMetadata,
-                                         long systemId, String userName) {
-        processDefinitionMetadataMapperService.deployProcessDefinition(processDefinitionMetadata.getId(),
-            repositoryService.createProcessDefinitionQuery().deploymentId(processEngineService
-                .deployProcessDefinition(processDefinitionMetadata, systemId).getId()).singleResult().getVersion(),
-            userName);
+        processDefinitionMetadata.setStatus(StatusEnum.DEPLOYED);
+        processDefinitionMetadata
+            .setVersion(processEngineService.deployProcessDefinition(processDefinitionMetadata, systemId));
+        processDefinitionMetadataMapperService.updateProcessDefinitionMetadataById(processDefinitionMetadata, userName);
     }
 
     @Override
-    public void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata) {
-        // TODO
+    public void setProcessDefinitionMetadata(Long systemId, ProcessDefinitionMetadata processDefinitionMetadata,
+                                             String userName) {
+        processDefinitionMetadataMapperService
+            .saveOrUpdateProcessDefinitionMetadata(systemId, processDefinitionMetadata, userName, processEngineService);
     }
 
     @Override
     public void deleteProcessDefinition(String processDefinitionKey) {
-        // TODO
+        // TODO 先停止所有在途流程实例，然后再将流程定义元数据设置为已删除状态
     }
 
     @Override
