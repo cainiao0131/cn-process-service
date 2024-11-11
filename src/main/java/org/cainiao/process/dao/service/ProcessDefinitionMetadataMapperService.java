@@ -10,6 +10,7 @@ import org.cainiao.process.dao.mapper.ProcessDefinitionMetadataMapper;
 import org.cainiao.process.entity.ProcessDefinitionMetadata;
 import org.cainiao.process.entity.ProcessDefinitionMetadata.StatusEnum;
 import org.cainiao.process.service.processengine.ProcessEngineService;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -28,21 +29,22 @@ public class ProcessDefinitionMetadataMapperService
     extends ServiceImpl<ProcessDefinitionMetadataMapper, ProcessDefinitionMetadata>
     implements IService<ProcessDefinitionMetadata> {
 
+    private static final String REPEATED_NAME_MESSAGE = "流程名称重复！";
+
     public void saveOrUpdateProcessDefinitionMetadata(
         Long systemId, ProcessDefinitionMetadata processDefinitionMetadata, String userName,
         ProcessEngineService processEngineService) {
 
         Long currentId = processDefinitionMetadata.getId();
-        ProcessDefinitionMetadata old = processDefinition(currentId);
         LambdaQueryChainWrapper<ProcessDefinitionMetadata> sameNameCnd = getSystemLambdaQuery(systemId)
             .eq(ProcessDefinitionMetadata::getName, processDefinitionMetadata.getName());
-        if (old == null) {
+        if (currentId == null || currentId <= 0) {
             // 添加
             if (lambdaQuery(systemId, processDefinitionMetadata.getProcessDefinitionKey()).exists()) {
                 throw new BusinessException("流程定义 Key 重复!");
             }
             if (sameNameCnd.exists()) {
-                throw new BusinessException("流程名称重复!");
+                throw new BusinessException(REPEATED_NAME_MESSAGE);
             }
             processDefinitionMetadata.setId(null);
             processDefinitionMetadata.setCreatedBy(userName);
@@ -54,12 +56,16 @@ public class ProcessDefinitionMetadataMapperService
                 throw new BusinessException("添加流程定义元数据失败！");
             }
         } else {
+            ProcessDefinitionMetadata old = processDefinition(currentId);
+            if (old == null) {
+                throw new BusinessException("未找到流程定义元数据！");
+            }
             // 编辑
             if (!old.getProcessDefinitionKey().equals(processDefinitionMetadata.getProcessDefinitionKey())) {
-                throw new BusinessException("不允许修改流程定义 Key!");
+                throw new BusinessException("不允许修改流程定义 Key！");
             }
             if (sameNameCnd.ne(ProcessDefinitionMetadata::getId, currentId).exists()) {
-                throw new BusinessException("流程名称重复!");
+                throw new BusinessException(REPEATED_NAME_MESSAGE);
             }
             if (StatusEnum.DEPLOYED.equals(old.getStatus())
                 && (!fixString(old.getXml()).equals(fixString(processDefinitionMetadata.getXml()))
@@ -118,10 +124,7 @@ public class ProcessDefinitionMetadataMapperService
             .orderByDesc(ProcessDefinitionMetadata::getUpdatedAt));
     }
 
-    public ProcessDefinitionMetadata processDefinition(Long processDefinitionId) {
-        if (processDefinitionId == null || processDefinitionId <= 0) {
-            return null;
-        }
+    public ProcessDefinitionMetadata processDefinition(@NonNull Long processDefinitionId) {
         return lambdaQuery().eq(ProcessDefinitionMetadata::getId, processDefinitionId)
             .ne(ProcessDefinitionMetadata::getStatus, StatusEnum.DELETED).one();
     }
