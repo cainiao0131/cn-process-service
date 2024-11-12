@@ -29,8 +29,7 @@ public class FormMapperService extends ServiceImpl<FormMapper, Form> implements 
 
     public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
         QueryWrapper<Form> queryWrapper = new QueryWrapper<>();
-        boolean hasKey = StringUtils.hasText(key);
-        queryWrapper.lambda().eq(Form::getSystemId, systemId).and(hasKey, wrapper -> wrapper
+        queryWrapper.lambda().eq(Form::getSystemId, systemId).and(StringUtils.hasText(key), wrapper -> wrapper
             .like(Form::getKey, key).or().like(Form::getName, key).or().like(Form::getDescription, key));
         return searchPage(current, size, () -> count(queryWrapper),
             (offset) -> getBaseMapper().formInfos(offset, size, queryWrapper));
