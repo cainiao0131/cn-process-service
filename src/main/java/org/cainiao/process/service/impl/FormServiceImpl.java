@@ -26,7 +26,7 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public IPage<FormResponse> forms(long systemId, long current, int size, String key) {
+    public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
         return formMapperService.forms(systemId, current, size, key);
     }
 }

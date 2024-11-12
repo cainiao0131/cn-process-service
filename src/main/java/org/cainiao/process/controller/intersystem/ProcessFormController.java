@@ -8,13 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.cainiao.process.dto.FormWithVersion;
 import org.cainiao.process.dto.response.FormResponse;
 import org.cainiao.process.service.FormService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE;
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
@@ -38,7 +32,7 @@ public class ProcessFormController {
     @Operation(summary = "分页模糊搜索某系统中的流程表单")
     public IPage<FormResponse> forms(
         @Parameter(description = "系统 ID", required = true) @PathVariable long systemId,
-        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) long current,
+        @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) int current,
         @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "搜索关键词") @RequestParam String key) {
 

@@ -8,5 +8,5 @@ public interface FormService {
 
     void addOrEditForm(long systemId, FormWithVersion formWithVersion, String userName);
 
-    IPage<FormResponse> forms(long systemId, long current, int size, String key);
+    IPage<FormResponse> forms(long systemId, int current, int size, String key);
 }

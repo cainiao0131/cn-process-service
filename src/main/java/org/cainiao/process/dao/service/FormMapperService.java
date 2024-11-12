@@ -1,5 +1,6 @@
 package org.cainiao.process.dao.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <br />
@@ -23,18 +27,20 @@ import java.time.LocalDateTime;
 @Service
 public class FormMapperService extends ServiceImpl<FormMapper, Form> implements IService<Form> {
 
-    public IPage<FormResponse> forms(long systemId, long current, int size, String key) {
-        LambdaQueryChainWrapper<Form> cnd = lambdaQuery().eq(Form::getSystemId, systemId);
-        if (StringUtils.hasText(key)) {
-            cnd.and(lambdaQueryWrapper -> lambdaQueryWrapper.like(Form::getKey, key)
-                .or().like(Form::getName, key).or().like(Form::getDescription, key));
-        }
-        long count = cnd.count();
-//        Sql sql = sql("flow.forms.with.version");
-//        sql.setCondition(cnd);
+    public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
+        QueryWrapper<Form> queryWrapper = new QueryWrapper<>();
+        boolean hasKey = StringUtils.hasText(key);
+        queryWrapper.lambda().eq(Form::getSystemId, systemId).and(hasKey, wrapper -> wrapper
+            .like(Form::getKey, key).or().like(Form::getName, key).or().like(Form::getDescription, key));
+        return searchPage(current, size, () -> count(queryWrapper),
+            (offset) -> getBaseMapper().formInfos(offset, size, queryWrapper));
+    }
+
+    private IPage<FormResponse> searchPage(int current, int size, Supplier<Long> countFactory,
+                                           Function<Integer, List<FormResponse>> recordFactory) {
         IPage<FormResponse> page = new Page<>(current, size);
-        // TODO page.setRecords(null);
-        page.setTotal(count);
+        page.setTotal(countFactory.get());
+        page.setRecords(recordFactory.apply((current - 1) * size));
         return page;
     }
 
