@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <br />
@@ -46,5 +47,9 @@ public class FormVersionMapperService extends ServiceImpl<FormVersionMapper, For
 
     public FormVersion fetchNewestVersion(String formKey) {
         return lambdaQuery().eq(FormVersion::getFormKey, formKey).orderByDesc(FormVersion::getVersion).one();
+    }
+
+    public List<FormVersion> versions(String formKey) {
+        return lambdaQuery().eq(FormVersion::getFormKey, formKey).orderByDesc(FormVersion::getVersion).list();
     }
 }

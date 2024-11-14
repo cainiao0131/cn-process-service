@@ -7,17 +7,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.cainiao.process.dto.FormWithVersion;
 import org.cainiao.process.dto.response.FormResponse;
+import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.FormService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE;
 import static org.cainiao.process.dao.DaoUtil.DEFAULT_PAGE_SIZE;
 
 @RestController
 @RequestMapping("inter-system")
-@Tag(name = "ProcessFormController", description = "流程表单管理")
+@Tag(name = "FormController", description = "流程表单管理")
 @RequiredArgsConstructor
-public class ProcessFormController {
+public class FormController {
 
     private final FormService formService;
 
@@ -39,5 +42,13 @@ public class ProcessFormController {
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
         // 用户是否参与了建设这个系统的项目的数据权限校验，由【技术中台】的聚合服务完成
         return formService.forms(systemId, current, size, key);
+    }
+
+    @GetMapping("form/{key}/versions")
+    @Operation(summary = "表单版本")
+    public List<FormVersion> versions(
+        @Parameter(description = "表单 Key", required = true) @PathVariable String key) {
+
+        return formService.versions(key);
     }
 }

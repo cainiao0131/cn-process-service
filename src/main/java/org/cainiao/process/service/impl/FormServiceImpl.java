@@ -7,9 +7,12 @@ import org.cainiao.process.dao.service.FormVersionMapperService;
 import org.cainiao.process.dto.FormWithVersion;
 import org.cainiao.process.dto.response.FormResponse;
 import org.cainiao.process.entity.Form;
+import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.FormService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,5 +31,10 @@ public class FormServiceImpl implements FormService {
     @Override
     public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
         return formMapperService.forms(systemId, current, size, key);
+    }
+
+    @Override
+    public List<FormVersion> versions(String formKey) {
+        return formVersionMapperService.versions(formKey);
     }
 }

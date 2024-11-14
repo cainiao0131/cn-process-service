@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cainiao.process.dao.mapper.FormMapper">
+    <resultMap id="FormResponseResultMap" type="org.cainiao.process.dto.response.FormResponse">
+        <result column="f_system_id" property="systemId"/>
+        <result column="f_key" property="key"/>
+        <result column="f_name" property="name"/>
+        <result column="f_description" property="description"/>
+    </resultMap>
+
+    <!-- @formatter:off -->
+    <select id="formInfos" resultMap="FormResponseResultMap">
+        select
+            max(tf_out.id) as id,
+            max(tf_out.f_system_id) as f_system_id,
+            max(tf_out.f_key) as f_key,
+            max(tf_out.f_name) as f_name,
+            max(tf_out.f_description) as f_description,
+            max(tf_out.created_by) as created_by,
+            max(tf_out.created_at) as created_at,
+            max(tf_out.updated_by) as updated_by,
+            max(tf_out.updated_at) as updated_at,
+            max(tfv.fv_version) as latest_version
+        from
+        (
+            select
+                tf.id,
+                tf.f_system_id,
+                tf.f_key,
+                tf.f_name,
+                tf.f_description,
+                tf.created_by,
+                tf.created_at,
+                tf.updated_by,
+                tf.updated_at
+            from
+                t_form tf
+            ${ew.customSqlSegment}
+            LIMIT #{size} OFFSET #{offset}
+        ) tf_out
+        left join t_form_version tfv on tfv.fv_form_key = tf_out.f_key
+        group by tf_out.id
+        order by updated_at desc
+    </select>
+    <!-- @formatter:on -->
+</mapper>
