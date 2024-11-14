@@ -49,4 +49,11 @@ public class FormServiceImpl implements FormService {
             .formVersion(formVersionMapperService.fetchNewestVersion(formKey))
             .build();
     }
+
+    @Override
+    public void deleteForm(String formKey) {
+        // TODO 检查是否存在引用了这个表单的流程实例，如果存在则删除失败抛异常
+        // TODO 在发起和部署流程时，检查流程定义中是否存在被删除的表单版本，如果存在则发起或部署失败，提示用户修改
+        // TODO 删除表单时同时删除所有表单版本
+    }
 }

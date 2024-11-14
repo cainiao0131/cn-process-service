@@ -59,4 +59,10 @@ public class FormController {
 
         return formService.form(key);
     }
+
+    @DeleteMapping("form/{key}")
+    @Operation(summary = "删除表单")
+    public void deleteForm(@Parameter(description = "表单 Key", required = true) @PathVariable String key) {
+        formService.deleteForm(key);
+    }
 }

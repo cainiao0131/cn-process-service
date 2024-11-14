@@ -16,4 +16,6 @@ public interface FormService {
     List<FormVersion> versions(String formKey);
 
     FormWithVersion form(String formKey);
+
+    void deleteForm(String formKey);
 }
