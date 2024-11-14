@@ -43,11 +43,11 @@ public class FormMapperService extends ServiceImpl<FormMapper, Form> implements 
         return page;
     }
 
-    public Form fetchByKey(String key) {
-        if (!StringUtils.hasText(key)) {
+    public Form fetchByKey(String formKey) {
+        if (!StringUtils.hasText(formKey)) {
             return null;
         }
-        return lambdaQuery().eq(Form::getKey, key).one();
+        return lambdaQuery().eq(Form::getKey, formKey).one();
     }
 
     public Form fetchById(Long formId) {

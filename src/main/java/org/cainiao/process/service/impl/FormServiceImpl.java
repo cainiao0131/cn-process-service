@@ -37,4 +37,16 @@ public class FormServiceImpl implements FormService {
     public List<FormVersion> versions(String formKey) {
         return formVersionMapperService.versions(formKey);
     }
+
+    @Override
+    public FormWithVersion form(String formKey) {
+        Form form = formMapperService.fetchByKey(formKey);
+        if (form == null) {
+            return null;
+        }
+        return FormWithVersion.builder()
+            .form(form)
+            .formVersion(formVersionMapperService.fetchNewestVersion(formKey))
+            .build();
+    }
 }

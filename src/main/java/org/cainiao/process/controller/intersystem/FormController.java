@@ -51,4 +51,12 @@ public class FormController {
 
         return formService.versions(key);
     }
+
+    @GetMapping("form/{key}")
+    @Operation(summary = "表单详情")
+    public FormWithVersion form(
+        @Parameter(description = "表单 Key", required = true) @PathVariable String key) {
+
+        return formService.form(key);
+    }
 }

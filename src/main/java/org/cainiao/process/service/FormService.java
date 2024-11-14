@@ -14,4 +14,6 @@ public interface FormService {
     IPage<FormResponse> forms(long systemId, int current, int size, String key);
 
     List<FormVersion> versions(String formKey);
+
+    FormWithVersion form(String formKey);
 }
