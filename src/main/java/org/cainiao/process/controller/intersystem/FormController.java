@@ -35,13 +35,14 @@ public class FormController {
     @Operation(summary = "分页模糊搜索某系统中的流程表单")
     public IPage<FormResponse> forms(
         @Parameter(description = "系统 ID", required = true) @PathVariable long systemId,
+        @Parameter(description = "是否归档") @RequestParam(defaultValue = "false") boolean archived,
         @Parameter(description = "页码") @RequestParam(defaultValue = DEFAULT_PAGE) int current,
         @Parameter(description = "页面大小") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
         @Parameter(description = "搜索关键词") @RequestParam String key) {
 
         // 只有【技术中台】可以访问这个接口，由【系统网关】根据【服务编排】进行访问控制
         // 用户是否参与了建设这个系统的项目的数据权限校验，由【技术中台】的聚合服务完成
-        return formService.forms(systemId, current, size, key);
+        return formService.forms(systemId, archived, current, size, key);
     }
 
     @GetMapping("form/{key}/versions")
@@ -49,7 +50,7 @@ public class FormController {
     public List<FormVersion> versions(
         @Parameter(description = "表单 Key", required = true) @PathVariable String key) {
 
-        return formService.versions(key);
+        return formService.formVersions(key);
     }
 
     @GetMapping("form/{key}")
@@ -57,12 +58,14 @@ public class FormController {
     public FormWithVersion form(
         @Parameter(description = "表单 Key", required = true) @PathVariable String key) {
 
-        return formService.form(key);
+        // TODO 从 Header 中获取调用者的系统 ID
+        return formService.form(0, key);
     }
 
     @DeleteMapping("form/{key}")
     @Operation(summary = "删除表单")
     public void deleteForm(@Parameter(description = "表单 Key", required = true) @PathVariable String key) {
-        formService.deleteForm(key);
+        // TODO 从 Header 中获取调用者的系统 ID 和用户名
+        formService.deleteForm(0, key, null);
     }
 }

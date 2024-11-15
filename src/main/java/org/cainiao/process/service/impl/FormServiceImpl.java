@@ -29,18 +29,18 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
-        return formMapperService.forms(systemId, current, size, key);
+    public IPage<FormResponse> forms(long systemId, boolean archived, int current, int size, String key) {
+        return formMapperService.forms(systemId, archived, current, size, key);
     }
 
     @Override
-    public List<FormVersion> versions(String formKey) {
-        return formVersionMapperService.versions(formKey);
+    public List<FormVersion> formVersions(String formKey) {
+        return formVersionMapperService.formVersions(formKey);
     }
 
     @Override
-    public FormWithVersion form(String formKey) {
-        Form form = formMapperService.fetchByKey(formKey);
+    public FormWithVersion form(long systemId, String formKey) {
+        Form form = formMapperService.findOneBySystemIdAndKey(systemId, formKey);
         if (form == null) {
             return null;
         }
@@ -51,9 +51,7 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public void deleteForm(String formKey) {
-        // TODO 检查是否存在引用了这个表单的流程实例，如果存在则删除失败抛异常
-        // TODO 在发起和部署流程时，检查流程定义中是否存在被删除的表单版本，如果存在则发起或部署失败，提示用户修改
-        // TODO 删除表单时同时删除所有表单版本
+    public void deleteForm(long systemId, String formKey, String userName) {
+        formMapperService.deleteForm(systemId, formKey, userName);
     }
 }

@@ -27,10 +27,12 @@ import java.util.function.Supplier;
 @Service
 public class FormMapperService extends ServiceImpl<FormMapper, Form> implements IService<Form> {
 
-    public IPage<FormResponse> forms(long systemId, int current, int size, String key) {
+    public IPage<FormResponse> forms(long systemId, boolean archived, int current, int size, String key) {
         QueryWrapper<Form> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(Form::getSystemId, systemId).and(StringUtils.hasText(key), wrapper -> wrapper
-            .like(Form::getKey, key).or().like(Form::getName, key).or().like(Form::getDescription, key));
+        queryWrapper.lambda().eq(Form::getSystemId, systemId)
+            .eq(Form::isArchived, archived)
+            .and(StringUtils.hasText(key), wrapper -> wrapper
+                .like(Form::getKey, key).or().like(Form::getName, key).or().like(Form::getDescription, key));
         return searchPage(current, size, () -> count(queryWrapper),
             (offset) -> getBaseMapper().formInfos(offset, size, queryWrapper));
     }
@@ -43,14 +45,15 @@ public class FormMapperService extends ServiceImpl<FormMapper, Form> implements 
         return page;
     }
 
-    public Form fetchByKey(String formKey) {
+    public Form findOneBySystemIdAndKey(long systemId, String formKey) {
         if (!StringUtils.hasText(formKey)) {
             return null;
         }
-        return lambdaQuery().eq(Form::getKey, formKey).one();
+        return lambdaQuery().eq(Form::getSystemId, systemId)
+            .eq(Form::getKey, formKey).eq(Form::isArchived, false).one();
     }
 
-    public Form fetchById(Long formId) {
+    public Form findOneById(Long formId) {
         if (formId == null || formId <= 0) {
             return null;
         }
@@ -68,7 +71,7 @@ public class FormMapperService extends ServiceImpl<FormMapper, Form> implements 
     public Form addOrEditForm(long systemId, FormWithVersion formWithVersion, String userName) {
         Form form = formWithVersion.getForm();
         Long formId = form.getId();
-        Form old = fetchById(formId);
+        Form old = findOneById(formId);
         LambdaQueryChainWrapper<Form> sameNameCnd = lambdaQuery()
             .eq(Form::getSystemId, systemId).eq(Form::getName, form.getName());
         LocalDateTime now = LocalDateTime.now();
@@ -101,5 +104,14 @@ public class FormMapperService extends ServiceImpl<FormMapper, Form> implements 
         old.setDescription(form.getDescription());
         updateFormById(old, userName);
         return old;
+    }
+
+    public void deleteForm(long systemId, String formKey, String userName) {
+        // 因为表单会被历史流程引用，因此不删除记录，只做归档
+        Form form = findOneBySystemIdAndKey(systemId, formKey);
+        if (form != null) {
+            form.setArchived(true);
+            updateFormById(form, userName);
+        }
     }
 }

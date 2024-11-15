@@ -29,7 +29,7 @@ public class Form extends IdBaseEntity {
     @Schema(description = "所属系统 ID")
     private Long systemId;
 
-    @TableField(value = "f_key", insertStrategy = FieldStrategy.NOT_NULL)
+    @TableField(value = "f_key", insertStrategy = FieldStrategy.NOT_EMPTY)
     @Schema(description = "流程表单 Key，用于做业务的主键")
     private String key;
 
@@ -40,4 +40,8 @@ public class Form extends IdBaseEntity {
     @TableField(value = "f_description")
     @Schema(description = "表单描述")
     private String description;
+
+    @TableField(value = "f_archived", insertStrategy = FieldStrategy.NOT_NULL)
+    @Schema(description = "是否归档")
+    private boolean archived;
 }

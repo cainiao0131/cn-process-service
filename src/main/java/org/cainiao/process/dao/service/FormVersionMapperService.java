@@ -49,7 +49,7 @@ public class FormVersionMapperService extends ServiceImpl<FormVersionMapper, For
         return lambdaQuery().eq(FormVersion::getFormKey, formKey).orderByDesc(FormVersion::getVersion).one();
     }
 
-    public List<FormVersion> versions(String formKey) {
+    public List<FormVersion> formVersions(String formKey) {
         return lambdaQuery().eq(FormVersion::getFormKey, formKey).orderByDesc(FormVersion::getVersion).list();
     }
 }
