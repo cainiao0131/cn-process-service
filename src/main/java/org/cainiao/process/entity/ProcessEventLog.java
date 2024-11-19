@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * 流程事件日志汇总表，方便基于时间查看事件发生的过程<br />
+ * TODO 将请求重试数据解耦出去，一条事件记录只代表一次流程事件
  * <p>
  * Author: Cai Niao(wdhlzd@163.com)<br />
  */
