@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.cainiao.process.util.JsonUtil.jsonToList;
+import static org.cainiao.process.util.ProcessUtil.START_EVENT_NAME;
 import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 
 /**
@@ -120,7 +121,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     @Override
     public IPage<ProcessActivityResponse> processInstanceActivities(String processInstanceId, long current, int size) {
         Set<String> activityTypes = new HashSet<>();
-        activityTypes.add("startEvent");
+        activityTypes.add(START_EVENT_NAME);
         activityTypes.add("userTask");
         HistoricActivityInstanceQuery historicActivityInstanceQuery = historyService
             .createHistoricActivityInstanceQuery().activityTypes(activityTypes).processInstanceId(processInstanceId);
@@ -162,7 +163,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                     .activityId(activityId).activityName(activityName).activityType(activityType)
                     .createTime(activityInstance.getStartTime()).endTime(activityInstance.getEndTime())
                     .endReason(deleteReason).assignee(activityInstance.getAssignee()).build();
-                if ("startEvent".equalsIgnoreCase(activityType)) {
+                if (START_EVENT_NAME.equalsIgnoreCase(activityType)) {
                     workflowActivity.setVariables(getVariables(variableInstances,
                         processEngineService.getProcessFormKey(processDefinitionId, activityInstance.getActivityId())
                     ));
@@ -172,7 +173,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                             .taskId(activityInstance.getTaskId()).list(),
                         processEngineService.getProcessFormKey(processDefinitionId, activityInstance.getActivityId())));
                 }
-                if ("startEvent".equalsIgnoreCase(activityType) && firstProcessActivity == null) {
+                if (START_EVENT_NAME.equalsIgnoreCase(activityType) && firstProcessActivity == null) {
                     // 开始事件放到最后去，避免开始事件与第一个用户任务的 start time 相同时的排序错误
                     firstProcessActivity = workflowActivity;
                 } else {

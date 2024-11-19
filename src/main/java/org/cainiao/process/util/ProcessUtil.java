@@ -18,6 +18,11 @@ import java.util.Map;
 @UtilityClass
 public class ProcessUtil {
 
+    /**
+     * floable 中【开始事件】类型的节点类型名称
+     */
+    public static final String START_EVENT_NAME = "startEvent";
+
     public static void validateForm(FormVersion formVersion, Map<String, Object> variables) {
         if (formVersion == null) {
             return;
