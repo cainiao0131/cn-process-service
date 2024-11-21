@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.cainiao.process.util.JsonUtil.jsonToList;
+import static org.cainiao.process.util.ProcessUtil.START_EVENT_NAME;
 import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 
 /**
@@ -128,7 +129,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
     @Override
     public IPage<ProcessActivityResponse> processInstanceActivities(String processInstanceId, long current, int size) {
         Set<String> activityTypes = new HashSet<>();
-        activityTypes.add("startEvent");
+        activityTypes.add(START_EVENT_NAME);
         activityTypes.add("userTask");
         HistoricActivityInstanceQuery historicActivityInstanceQuery = historyService
             .createHistoricActivityInstanceQuery().activityTypes(activityTypes).processInstanceId(processInstanceId);
@@ -152,13 +153,16 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
             for (HistoricActivityInstance activityInstance : activities) {
                 String activityType = activityInstance.getActivityType();
                 String deleteReason = activityInstance.getDeleteReason();
-                if ("userTask".equalsIgnoreCase(activityType) && "MI_END".equalsIgnoreCase(deleteReason)) {
-                    /*
-                     * "MI_END" 表示当前记录是多人任务，因为任务结束而被删除的活动实例
-                     * 即这个活动的用户并没有完成这个任务，因此排除掉
-                     */
-                    continue;
-                }
+                /*
+                 * deleteReason 为 "MI_END" 表示当前记录是多人任务，因为任务被别的活动实例完成，导致当前活动实例被删除
+                 * 即当前活动实例的用户并没有完成这个任务，任务被别的用户完成了
+                 *
+                 * deleteReason 为 "Change activity to ${elementKey}" 表示当前活动实例是因为调用
+                 * moveActivityIdsToSingleActivityId() API 进行了流程节点跳转而被删除的
+                 * elementKey 表示跳转的目标节点的元素 Key
+                 *
+                 * 在工作流服务的接口中不排除这些记录，由应用系统决定是否排除
+                 */
                 String activityId = activityInstance.getActivityId();
                 String activityInstanceId = activityInstance.getId();
                 String activityName = activityInstance.getActivityName();
@@ -167,7 +171,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                     .activityId(activityId).activityName(activityName).activityType(activityType)
                     .createTime(activityInstance.getStartTime()).endTime(activityInstance.getEndTime())
                     .endReason(deleteReason).assignee(activityInstance.getAssignee()).build();
-                if ("startEvent".equalsIgnoreCase(activityType)) {
+                if (START_EVENT_NAME.equalsIgnoreCase(activityType)) {
                     workflowActivity.setVariables(getVariables(variableInstances,
                         processEngineService.getProcessFormKey(processDefinitionId, activityInstance.getActivityId())
                     ));
@@ -177,7 +181,7 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                             .taskId(activityInstance.getTaskId()).list(),
                         processEngineService.getProcessFormKey(processDefinitionId, activityInstance.getActivityId())));
                 }
-                if ("startEvent".equalsIgnoreCase(activityType) && firstProcessActivity == null) {
+                if (START_EVENT_NAME.equalsIgnoreCase(activityType) && firstProcessActivity == null) {
                     // 开始事件放到最后去，避免开始事件与第一个用户任务的 start time 相同时的排序错误
                     firstProcessActivity = workflowActivity;
                 } else {
