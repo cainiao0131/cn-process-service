@@ -16,6 +16,11 @@
     <description>Process Service</description>
 
     <properties>
+        <!--
+        见：https://github.com/flowable/flowable-engine/issues/3944
+        某些版本存在任意流跳转 Bug，当目标任务为多实例时，如多用户，则无法触发多实例相关的行为
+        已确定的：6.7.x、6.8.0 没问题，6.8.1、7.0.1 有问题
+        -->
         <flowable.version>7.0.1</flowable.version>
     </properties>
 
@@ -24,7 +29,7 @@
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
