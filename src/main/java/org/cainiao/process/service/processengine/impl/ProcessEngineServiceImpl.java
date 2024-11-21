@@ -116,6 +116,9 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
             .processInstanceId(processInstanceId).singleResult().getProcessDefinitionId(), elementId);
     }
 
+    public static final String ACTIVITY_CHANGE_DELETE_REASON_PREFIX = "Change activity to ";
+    public static final String ACTIVITY_CHANGE_PARENT_DELETE_REASON_PREFIX = "Change parent activity to ";
+
     @Override
     public ProcessInstanceDetail processInstance(String processInstanceId) {
         ProcessInstance processInstance = runtimeService
@@ -125,13 +128,19 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
         /*
          * 一个活动，可能被重复执行过多次，这会导致一个节点查出多个 HistoricActivityInstance 记录
          * 这里是绘图用的，需要去重，取最新的那个的状态，并且要排除那些正在执行的节点
+         *
+         * 已完成的活动 ID 列表中，去掉那些因为任意流跳转而完成的活动，因为这是用于绘制流程图的信息，任意流跳转关闭的用户任务相当于还没有完成
          */
         Set<String> finishedActivityIds = new HashSet<>();
         historyService.createHistoricActivityInstanceQuery()
             .processInstanceId(processInstanceId).finished().orderByHistoricActivityInstanceEndTime().desc().list()
             .forEach(historicActivityInstance -> {
                 String activityId = historicActivityInstance.getActivityId();
-                if (!activeActivityIds.contains(activityId)) {
+                String deleteReason = historicActivityInstance.getDeleteReason();
+                if (!activeActivityIds.contains(activityId)
+                    && !deleteReason.startsWith(ACTIVITY_CHANGE_DELETE_REASON_PREFIX)
+                    && !deleteReason.startsWith(ACTIVITY_CHANGE_PARENT_DELETE_REASON_PREFIX)) {
+
                     finishedActivityIds.add(activityId);
                 }
             });
