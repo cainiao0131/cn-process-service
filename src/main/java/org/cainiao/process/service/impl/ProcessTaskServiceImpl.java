@@ -157,7 +157,8 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
                  * deleteReason 为 "MI_END" 表示当前记录是多人任务，因为任务被别的活动实例完成，导致当前活动实例被删除
                  * 即当前活动实例的用户并没有完成这个任务，任务被别的用户完成了
                  *
-                 * deleteReason 为 "Change activity to ${elementKey}" 表示当前活动实例是因为调用
+                 * deleteReason 为 "Change activity to ${elementKey}"
+                 * 或 "Change parent activity to ${elementKey}"（目标用户任务为多实例的情况）表示当前活动实例是因为调用
                  * moveActivityIdsToSingleActivityId() API 进行了流程节点跳转而被删除的
                  * elementKey 表示跳转的目标节点的元素 Key
                  *
