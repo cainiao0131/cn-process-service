@@ -8,12 +8,13 @@ import org.cainiao.process.entity.ProcessEventLog.EventType;
 import org.cainiao.process.entity.SystemMetadata;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.RepositoryService;
+import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.task.service.delegate.DelegateTask;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 
@@ -21,10 +22,42 @@ import static org.cainiao.process.util.TimeUtil.SIMPLE_DATE_FORMAT;
 @RequiredArgsConstructor
 public class UserTaskService {
 
+    private static final String ASSIGNEES_SEPARATOR = ",";
+
     private final ProcessEventLogMapperService processEventLogMapperService;
     private final SystemMetadataMapperService systemMetadataMapperService;
     private final HttpService httpService;
     private final RepositoryService repositoryService;
+
+    /**
+     * 流程引擎调用这个方法，用户任务，动态获取多个委托人
+     *
+     * @param execution       DelegateExecution
+     * @param assigneesString 表示多个委托人的字符串，可以混合使用字面量与 EL 表达式，如："LiHong,${admin},WangMing"
+     * @return 委托人列表
+     */
+    public List<String> getCollection(DelegateExecution execution, String assigneesString) {
+        if (!StringUtils.hasText(assigneesString)) {
+            return Collections.emptyList();
+        }
+        List<String> collection = new ArrayList<>();
+        for (String assignee : assigneesString.split(ASSIGNEES_SEPARATOR)) {
+            if (assignee.startsWith("${") && assignee.endsWith("}")) {
+                Object assigneeObject = execution.getVariable(assignee.replaceAll("[${}]", ""));
+                if (assigneeObject != null) {
+                    String assignees = assigneeObject.toString();
+                    if (assignees.contains(ASSIGNEES_SEPARATOR)) {
+                        collection.addAll(Arrays.asList(assignees.split(ASSIGNEES_SEPARATOR)));
+                    } else {
+                        collection.add(assignees);
+                    }
+                }
+            } else {
+                collection.add(assignee);
+            }
+        }
+        return collection;
+    }
 
     /**
      * 用户任务创建事件回调<br />
