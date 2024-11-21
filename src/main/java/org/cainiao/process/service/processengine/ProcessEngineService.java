@@ -17,6 +17,8 @@ public interface ProcessEngineService {
 
     FlowElement getFlowElement(String processDefinitionId, String flowElementId);
 
+    FlowElement getFlowElementByProcessInstanceId(String processInstanceId, String elementId);
+
     BpmnModel getBpmnModel(String processDefinitionId);
 
     ProcessDefinition getLatestVersionProcessDefinition(String processDefinitionTenantId, String processDefinitionKey);

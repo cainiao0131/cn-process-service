@@ -14,6 +14,8 @@ import org.cainiao.process.dto.response.VariableInfo;
 import org.cainiao.process.entity.FormVersion;
 import org.cainiao.process.service.ProcessTaskService;
 import org.cainiao.process.service.processengine.ProcessEngineService;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
@@ -21,7 +23,6 @@ import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.task.api.Task;
-import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
@@ -30,13 +31,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.cainiao.process.util.JsonUtil.jsonToList;
@@ -82,11 +77,24 @@ public class ProcessTaskServiceImpl implements ProcessTaskService {
 
     @Override
     public void jumpToTask(String processInstanceId, String taskKey) {
-        runtimeService.createChangeActivityStateBuilder()
-            .processInstanceId(processInstanceId)
-            .moveActivityIdsToSingleActivityId(taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .list().stream().map(TaskInfo::getTaskDefinitionKey).toList(), taskKey)
-            .changeState();
+        // 目标任务是否是多人任务
+        boolean isMultiTask = false;
+        FlowElement flowElement = processEngineService.getFlowElementByProcessInstanceId(processInstanceId, taskKey);
+        if (flowElement instanceof UserTask toUserTask) {
+            isMultiTask = toUserTask.getLoopCharacteristics() != null;
+        }
+        List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        Set<String> taskDefinitionKeys = new HashSet<>();
+        // 多人如无，同一个任务会有多个实例，taskDefinitionKey 是相同的，需要去重，所以用 Set
+        for (Task task : tasks) {
+            taskDefinitionKeys.add(task.getTaskDefinitionKey());
+        }
+        if (isMultiTask) {
+            // TODO 老版本，当目标任务时多人任务时，会导致无法触发创建实例的问题，新版本是否有问题待验证
+        } else {
+            runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                .moveActivityIdsToSingleActivityId(new ArrayList<>(taskDefinitionKeys), taskKey).changeState();
+        }
     }
 
     @Override

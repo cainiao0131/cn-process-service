@@ -22,11 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static org.cainiao.process.util.Util.fixString;
 
@@ -112,6 +108,12 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     @Override
     public FlowElement getFlowElement(String processDefinitionId, String flowElementId) {
         return getBpmnModel(processDefinitionId).getFlowElement(flowElementId);
+    }
+
+    @Override
+    public FlowElement getFlowElementByProcessInstanceId(String processInstanceId, String elementId) {
+        return getFlowElement(historyService.createHistoricProcessInstanceQuery()
+            .processInstanceId(processInstanceId).singleResult().getProcessDefinitionId(), elementId);
     }
 
     @Override
