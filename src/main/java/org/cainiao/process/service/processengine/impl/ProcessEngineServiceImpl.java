@@ -119,6 +119,18 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
     public static final String ACTIVITY_CHANGE_DELETE_REASON_PREFIX = "Change activity to ";
     public static final String ACTIVITY_CHANGE_PARENT_DELETE_REASON_PREFIX = "Change parent activity to ";
 
+    /**
+     * @param deleteReason 删除原因
+     * @return 当前活动是否是因为任意流跳转而被关闭的
+     */
+    public static boolean isChangeTo(String deleteReason) {
+        if (deleteReason == null) {
+            return false;
+        }
+        return deleteReason.startsWith(ACTIVITY_CHANGE_DELETE_REASON_PREFIX)
+            || deleteReason.startsWith(ACTIVITY_CHANGE_PARENT_DELETE_REASON_PREFIX);
+    }
+
     @Override
     public ProcessInstanceDetail processInstance(String processInstanceId) {
         ProcessInstance processInstance = runtimeService
@@ -136,10 +148,8 @@ public class ProcessEngineServiceImpl implements ProcessEngineService {
             .processInstanceId(processInstanceId).finished().orderByHistoricActivityInstanceEndTime().desc().list()
             .forEach(historicActivityInstance -> {
                 String activityId = historicActivityInstance.getActivityId();
-                String deleteReason = historicActivityInstance.getDeleteReason();
                 if (!activeActivityIds.contains(activityId)
-                    && !deleteReason.startsWith(ACTIVITY_CHANGE_DELETE_REASON_PREFIX)
-                    && !deleteReason.startsWith(ACTIVITY_CHANGE_PARENT_DELETE_REASON_PREFIX)) {
+                    && !isChangeTo(historicActivityInstance.getDeleteReason())) {
 
                     finishedActivityIds.add(activityId);
                 }
